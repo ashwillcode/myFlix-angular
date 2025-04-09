@@ -1,0 +1,55 @@
+<div class="registration-container">
+  <h2 mat-dialog-title>Register</h2>
+  <mat-dialog-content>
+    <form [formGroup]="registrationForm" class="registration-form">
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="Username" required>
+        <mat-error *ngIf="registrationForm.get('Username')?.hasError('required')">
+          Username is required
+        </mat-error>
+        <mat-error *ngIf="registrationForm.get('Username')?.hasError('minlength')">
+          Username must be at least 3 characters long
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="Password" required>
+        <mat-error *ngIf="registrationForm.get('Password')?.hasError('required')">
+          Password is required
+        </mat-error>
+        <mat-error *ngIf="registrationForm.get('Password')?.hasError('minlength')">
+          Password must be at least 8 characters long
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="Email" required>
+        <mat-error *ngIf="registrationForm.get('Email')?.hasError('required')">
+          Email is required
+        </mat-error>
+        <mat-error *ngIf="registrationForm.get('Email')?.hasError('email')">
+          Please enter a valid email address
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Birthday</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="Birthday" required>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="registrationForm.get('Birthday')?.hasError('required')">
+          Birthday is required
+        </mat-error>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="registerUser()" [disabled]="!registrationForm.valid">
+      Register
+    </button>
+  </mat-dialog-actions>
+</div>

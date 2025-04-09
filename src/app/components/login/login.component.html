@@ -1,0 +1,28 @@
+<div class="login-container">
+  <h2 mat-dialog-title>Login</h2>
+  <mat-dialog-content>
+    <form [formGroup]="loginForm" class="login-form">
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="Username" required>
+        <mat-error *ngIf="loginForm.get('Username')?.hasError('required')">
+          Username is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="Password" required>
+        <mat-error *ngIf="loginForm.get('Password')?.hasError('required')">
+          Password is required
+        </mat-error>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="login()" [disabled]="!loginForm.valid">
+      Login
+    </button>
+  </mat-dialog-actions>
+</div>
