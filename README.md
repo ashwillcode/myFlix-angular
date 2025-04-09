@@ -1,59 +1,95 @@
-# MyFlixAngularClient
+# MyFlix Angular Client
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.6.
+A modern web application that allows users to browse and manage their favorite movies. Built with Angular, this client-side application provides a responsive and intuitive user interface for movie enthusiasts.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- User authentication (signup, login, logout)
+- Browse movies from a comprehensive database
+- View detailed information about movies
+- Add/remove movies to/from favorites
+- Update user profile information
+- Responsive design for various screen sizes
+
+## Prerequisites
+
+- Node.js (version 18.x or higher)
+- npm (comes with Node.js)
+- Angular CLI (`npm install -g @angular/cli`)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/myFlix-angular.git
+cd myFlix-angular
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+## Development
+
+To start the development server:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The application will be available at `http://localhost:4200/`. Any changes you make to the source files will automatically reload the application.
 
-## Code scaffolding
+## Building for Production
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+To create a production build:
 
 ```bash
-ng generate --help
+ng build --configuration production
 ```
 
-## Building
+The build artifacts will be stored in the `dist/` directory.
 
-To build the project run:
+## Testing
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
+Run unit tests:
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
+Run end-to-end tests:
 ```bash
 ng e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Project Structure
 
-## Additional Resources
+- `src/app/components/` - Contains all Angular components
+- `src/app/services/` - Contains services for API communication and data management
+- `src/app/models/` - Contains TypeScript interfaces and models
+- `src/assets/` - Contains static assets like images and styles
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Technologies Used
+
+- Angular 19
+- TypeScript
+- Angular Material
+- RxJS
+- Angular Router
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Angular team for the amazing framework
+- The Movie Database API for providing movie data
