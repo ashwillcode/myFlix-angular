@@ -13,32 +13,58 @@ interface User {
   FavoriteMovies?: string[];
 }
 
-// Movie interface
-interface Movie {
-  _id: string;
-  Title: string;
-  Description: string;
-  Genre: {
-    Name: string;
-    Description: string;
-  };
-  Director: {
-    Name: string;
-    Bio: string;
-    Birth: Date;
-  };
-  ImagePath: string;
-  Featured: boolean;
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class FetchApiDataService {
-  private apiUrl = 'https://myflix-api-ashwillcode.herokuapp.com/';
+  private apiUrl = 'https://filmapi-ab3ce15dfb3f.herokuapp.com/';
   private token = '';
 
   constructor(private http: HttpClient) { }
+
+  // Get auth token
+  private getToken(): string {
+    const token = localStorage.getItem('token');
+    console.log('Token from localStorage:', token ? 'Present' : 'Missing');
+    
+    if (!token) {
+      console.warn('No token found in localStorage');
+      return '';
+    }
+    
+    // Check if token starts with 'Bearer'
+    if (!token.startsWith('Bearer ')) {
+      console.warn('Token does not start with "Bearer", adding prefix');
+      return `Bearer ${token}`;
+    }
+    
+    return token;
+  }
+
+  // Add auth header to requests
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.getToken();
+    console.log('Getting auth headers with token:', token ? 'Present' : 'Missing');
+    
+    if (!token) {
+      console.error('No token available for request');
+      return new HttpHeaders({
+        'Content-Type': 'application/json'
+      });
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': token,
+      'Content-Type': 'application/json'
+    });
+    
+    console.log('Request headers created:', {
+      'Authorization': headers.get('Authorization') ? 'Present' : 'Missing',
+      'Content-Type': headers.get('Content-Type')
+    });
+    
+    return headers;
+  }
 
   // User registration
   public userRegistration(userDetails: User): Observable<any> {
@@ -48,60 +74,26 @@ export class FetchApiDataService {
   }
 
   // User login
-  public userLogin(userDetails: User): Observable<any> {
+  public userLogin(userDetails: { Username: string; Password: string }): Observable<any> {
+    console.log('Attempting login for user:', userDetails.Username);
     return this.http.post(this.apiUrl + 'login', userDetails).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // Get all movies
-  public getAllMovies(): Observable<any> {
-    return this.http.get(this.apiUrl + 'movies').pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // Get one movie
-  public getOneMovie(title: string): Observable<any> {
-    return this.http.get(this.apiUrl + 'movies/' + title).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // Get director info
-  public getDirector(name: string): Observable<any> {
-    return this.http.get(this.apiUrl + 'movies/director/' + name).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // Get genre info
-  public getGenre(name: string): Observable<any> {
-    return this.http.get(this.apiUrl + 'movies/genre/' + name).pipe(
-      catchError(this.handleError)
+      catchError((error) => {
+        console.error('Login API error:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
+        return this.handleError(error);
+      })
     );
   }
 
   // Get user info
   public getUser(): Observable<any> {
     const username = localStorage.getItem('user');
-    return this.http.get(this.apiUrl + 'users/' + username).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // Get user's favorite movies
-  public getFavoriteMovies(): Observable<any> {
-    const username = localStorage.getItem('user');
-    return this.http.get(this.apiUrl + 'users/' + username + '/movies').pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // Add movie to favorites
-  public addFavoriteMovie(movieId: string): Observable<any> {
-    const username = localStorage.getItem('user');
-    return this.http.post(this.apiUrl + 'users/' + username + '/movies/' + movieId, {}).pipe(
+    return this.http.get(this.apiUrl + 'users/' + username, {
+      headers: this.getAuthHeaders()
+    }).pipe(
       catchError(this.handleError)
     );
   }
@@ -109,7 +101,9 @@ export class FetchApiDataService {
   // Edit user info
   public editUser(userDetails: User): Observable<any> {
     const username = localStorage.getItem('user');
-    return this.http.put(this.apiUrl + 'users/' + username, userDetails).pipe(
+    return this.http.put(this.apiUrl + 'users/' + username, userDetails, {
+      headers: this.getAuthHeaders()
+    }).pipe(
       catchError(this.handleError)
     );
   }
@@ -117,21 +111,20 @@ export class FetchApiDataService {
   // Delete user
   public deleteUser(): Observable<any> {
     const username = localStorage.getItem('user');
-    return this.http.delete(this.apiUrl + 'users/' + username).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  // Delete movie from favorites
-  public deleteFavoriteMovie(movieId: string): Observable<any> {
-    const username = localStorage.getItem('user');
-    return this.http.delete(this.apiUrl + 'users/' + username + '/movies/' + movieId).pipe(
+    return this.http.delete(this.apiUrl + 'users/' + username, {
+      headers: this.getAuthHeaders()
+    }).pipe(
       catchError(this.handleError)
     );
   }
 
   // Error handling
   private handleError(error: any): Observable<any> {
-    return throwError(() => new Error(error.error.message || 'Some error occurred'));
+    console.error('API Error:', {
+      status: error.status,
+      message: error.error?.message || error.message,
+      error: error
+    });
+    return throwError(() => new Error(error.error?.message || error.message || 'Some error occurred'));
   }
 }

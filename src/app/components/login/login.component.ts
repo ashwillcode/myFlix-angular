@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FetchApiDataService } from '../../fetch-api-data.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -8,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +18,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
   styleUrls: ['./login.component.scss'],
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -27,14 +31,16 @@ export class LoginComponent {
   loginForm: FormGroup;
 
   constructor(
+    private router: Router,
     private dialogRef: MatDialogRef<LoginComponent>,
     private fetchApiData: FetchApiDataService,
     private snackBar: MatSnackBar,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.loginForm = this.formBuilder.group({
-      Username: ['', [Validators.required]],
-      Password: ['', [Validators.required]]
+      username: ['', [Validators.required]],
+      password: ['', [Validators.required]]
     });
   }
 
@@ -43,21 +49,53 @@ export class LoginComponent {
    */
   login(): void {
     if (this.loginForm.valid) {
+      console.log('Login attempt with:', this.loginForm.value);
       this.fetchApiData.userLogin(this.loginForm.value).subscribe({
         next: (result) => {
-          // Store user and token in localStorage
-          localStorage.setItem('user', result.user.Username);
-          localStorage.setItem('token', result.token);
+          console.log('Login response:', result);
           
-          this.dialogRef.close();
-          this.snackBar.open('Login successful', 'OK', {
-            duration: 2000
-          });
+          if (isPlatformBrowser(this.platformId)) {
+            // Check if token exists in response
+            if (!result.token) {
+              console.error('No token received in login response');
+              this.snackBar.open('Login failed: No token received', 'OK', {
+                duration: 2000
+              });
+              return;
+            }
+            
+            // Store user and token in localStorage
+            localStorage.setItem('user', result.user.Username);
+            
+            // Ensure token has Bearer prefix
+            const token = result.token.startsWith('Bearer ') ? result.token : `Bearer ${result.token}`;
+            localStorage.setItem('token', token);
+            
+            console.log('Stored token:', localStorage.getItem('token'));
+            console.log('Token format check:', {
+              hasBearer: token.startsWith('Bearer '),
+              length: token.length
+            });
+
+            // Close dialog first
+            this.dialogRef.close();
+
+            // Show success message
+            this.snackBar.open('Login successful', 'OK', {
+              duration: 2000
+            });
+
+            // Navigation to movies page removed
+            console.log('Login successful, but navigation to movies page has been removed');
+          }
         },
         error: (error) => {
-          this.snackBar.open(error, 'OK', {
-            duration: 2000
-          });
+          console.error('Login error details:', error);
+          this.snackBar.open(
+            error.error || error.message || 'Login failed. Please check your credentials.',
+            'OK',
+            { duration: 2000 }
+          );
         }
       });
     }

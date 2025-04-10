@@ -24,15 +24,30 @@ html, body {
 // Button styling
 .mat-mdc-raised-button, 
 .mat-mdc-button,
-.mdc-button {
+.mdc-button,
+button[mat-raised-button],
+button[mat-button] {
   border-radius: 25px !important;
-  transition: transform 0.2s ease-in-out !important;
+  transition: all 0.3s ease !important;
   background-color: #f8bbd0 !important;
   color: black !important;
   box-shadow: none !important;
+  padding: 8px 24px !important;
+  min-width: 120px !important;
 
   &:hover {
     transform: scale(1.05);
+    background-color: #f48fb1 !important; // Darker pink on hover
+  }
+
+  &:disabled {
+    background-color: rgba(0, 0, 0, 0.12) !important;
+    color: rgba(0, 0, 0, 0.38) !important;
+    transform: none !important;
+  }
+
+  mat-icon {
+    margin-right: 8px;
   }
 }
 
@@ -59,7 +74,7 @@ html, body {
   color: black !important;
 
   h1 {
-    color: #f48fb1;
+    color: black !important;
   }
 
   .button-container {
@@ -72,6 +87,38 @@ html, body {
   .mdc-dialog__surface {
     background-color: white !important;
     border-radius: 16px !important;
+  }
+
+  mat-dialog-actions {
+    padding: 16px !important;
+    gap: 8px !important;
+
+    button {
+      min-width: 100px !important;
+      
+      &.mat-mdc-button {  // Cancel button
+        background-color: transparent !important;
+        
+        &:hover {
+          background-color: #f8bbd0 !important;
+        }
+      }
+
+      &.mat-mdc-raised-button {  // Primary action button
+        background-color: #f8bbd0 !important;
+        
+        &:hover {
+          background-color: #f48fb1 !important;
+          transform: scale(1.05);
+        }
+
+        &:disabled {
+          background-color: rgba(0, 0, 0, 0.12) !important;
+          color: rgba(0, 0, 0, 0.38) !important;
+          transform: none !important;
+        }
+      }
+    }
   }
 }
 
@@ -128,4 +175,4 @@ h1, h2, h3, h4, h5, h6, p, span, div {
   .mdc-snackbar__action {
     color: #f8bbd0 !important;
   }
-}
+} 

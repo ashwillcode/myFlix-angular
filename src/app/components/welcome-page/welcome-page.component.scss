@@ -1,0 +1,44 @@
+.welcome-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  background: linear-gradient(to bottom right, #1a237e, #311b92);
+  color: white;
+
+  h1 {
+    margin-bottom: 40px;
+    font-size: 2.5em;
+    text-align: center;
+  }
+
+  .button-container {
+    display: flex;
+    gap: 20px;
+
+    button {
+      min-width: 120px;
+      font-size: 1.1em;
+      padding: 8px 24px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+        background-color: #f48fb1 !important;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  .button-container {
+    flex-direction: column;
+  }
+} 

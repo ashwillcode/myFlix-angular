@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-import { RegistrationComponent } from './components/registration/registration.component';
-import { LoginComponent } from './components/login/login.component';
+import { Component, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Router, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-root',
@@ -16,9 +16,8 @@ import { CommonModule } from '@angular/common';
     RouterOutlet,
     MatToolbarModule,
     MatButtonModule,
-    MatDialogModule,
-    RegistrationComponent,
-    LoginComponent
+    MatIconModule,
+    MatSnackBarModule
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
@@ -26,23 +25,33 @@ import { CommonModule } from '@angular/common';
 export class AppComponent {
   title = 'myFlix-Angular-client';
 
-  constructor(private dialog: MatDialog) { }
+  constructor(
+    private router: Router,
+    private snackBar: MatSnackBar,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   /**
-   * Opens the registration dialog
+   * Checks if user is logged in
+   * @returns boolean
    */
-  openRegistrationDialog(): void {
-    this.dialog.open(RegistrationComponent, {
-      width: '400px'
-    });
+  isLoggedIn(): boolean {
+    if (isPlatformBrowser(this.platformId)) {
+      return !!localStorage.getItem('token');
+    }
+    return false;
   }
 
   /**
-   * Opens the login dialog
+   * Logs out the user
    */
-  openLoginDialog(): void {
-    this.dialog.open(LoginComponent, {
-      width: '400px'
-    });
+  logout(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.clear();
+      this.router.navigate(['welcome']);
+      this.snackBar.open('Logged out successfully', 'OK', {
+        duration: 2000
+      });
+    }
   }
 }

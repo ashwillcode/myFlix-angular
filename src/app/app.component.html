@@ -1,26 +1,14 @@
 <div class="main-page">
-  <mat-toolbar color="primary">
+  <mat-toolbar>
     <span>myFlix</span>
     <span class="toolbar-spacer"></span>
-    <button
-      mat-raised-button
-      (click)="openRegistrationDialog()"
-      style="margin-right: 10px"
-    >
-      Sign Up
-    </button>
-    <button
-      mat-raised-button
-      (click)="openLoginDialog()"
-    >
-      Login
-    </button>
+    @if (isLoggedIn()) {
+      <button mat-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    }
   </mat-toolbar>
 
-  <div class="main-content">
-    <h1>Welcome to myFlix</h1>
-    <p>Your favorite movie database</p>
-  </div>
-</div>
-
-<router-outlet /> 
+  <router-outlet></router-outlet>
+</div> 

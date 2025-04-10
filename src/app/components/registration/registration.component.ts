@@ -10,6 +10,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-registration',
@@ -17,6 +18,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
   styleUrls: ['./registration.component.scss'],
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -37,10 +39,21 @@ export class RegistrationComponent {
     private formBuilder: FormBuilder
   ) {
     this.registrationForm = this.formBuilder.group({
-      Username: ['', [Validators.required, Validators.minLength(3)]],
-      Password: ['', [Validators.required, Validators.minLength(8)]],
-      Email: ['', [Validators.required, Validators.email]],
-      Birthday: ['', Validators.required]
+      username: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(30),
+        Validators.pattern(/^[a-zA-Z0-9_]*$/)
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/)
+      ]],
+      email: ['', [
+        Validators.required,
+        Validators.email
+      ]],
+      birthDate: [''] // Optional in API
     });
   }
 
@@ -49,7 +62,23 @@ export class RegistrationComponent {
    */
   registerUser(): void {
     if (this.registrationForm.valid) {
-      this.fetchApiData.userRegistration(this.registrationForm.value).subscribe({
+      const formData = {...this.registrationForm.value};
+      
+      // Remove birthDate if it's empty or null
+      if (!formData.birthDate) {
+        delete formData.birthDate;
+      } else {
+        // Convert birthDate to ISO format YYYY-MM-DD if it exists
+        const date = new Date(formData.birthDate);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        formData.birthDate = `${year}-${month}-${day}`;
+      }
+      
+      console.log('Sending registration data:', formData); // Add this to see what's being sent
+      
+      this.fetchApiData.userRegistration(formData).subscribe({
         next: (result) => {
           this.dialogRef.close();
           this.snackBar.open('User registration successful', 'OK', {
@@ -57,7 +86,8 @@ export class RegistrationComponent {
           });
         },
         error: (error) => {
-          this.snackBar.open(error, 'OK', {
+          console.error('Registration error:', error);
+          this.snackBar.open(error.message || 'Registration failed', 'OK', {
             duration: 2000
           });
         }
