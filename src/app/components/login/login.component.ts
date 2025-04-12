@@ -67,14 +67,42 @@ export class LoginComponent {
             // Store user and token in localStorage
             localStorage.setItem('user', result.user.Username);
             
-            // Ensure token has Bearer prefix
-            const token = result.token.startsWith('Bearer ') ? result.token : `Bearer ${result.token}`;
+            // Ensure token has Bearer prefix and is properly formatted
+            let token = result.token;
+            console.log('Login - Raw token from API:', {
+              token: token,
+              hasBearer: token.startsWith('Bearer '),
+              length: token.length,
+              firstChars: token.substring(0, 20) + '...'
+            });
+            
+            // Remove any existing token first
+            localStorage.removeItem('token');
+            
+            if (!token.startsWith('Bearer ')) {
+              token = `Bearer ${token}`;
+            }
+            
+            // Remove any double Bearer prefixes
+            token = token.replace('Bearer Bearer ', 'Bearer ');
+            
+            // Store the token
             localStorage.setItem('token', token);
             
-            console.log('Stored token:', localStorage.getItem('token'));
-            console.log('Token format check:', {
+            console.log('Login - Token storage:', {
+              token: token,
               hasBearer: token.startsWith('Bearer '),
-              length: token.length
+              length: token.length,
+              firstChars: token.substring(0, 20) + '...'
+            });
+            
+            // Verify token was stored correctly
+            const storedToken = localStorage.getItem('token');
+            console.log('Login - Token verification:', {
+              storedToken: storedToken,
+              hasBearer: storedToken?.startsWith('Bearer '),
+              length: storedToken?.length,
+              firstChars: storedToken ? storedToken.substring(0, 20) + '...' : 'N/A'
             });
 
             // Close dialog first
@@ -85,8 +113,8 @@ export class LoginComponent {
               duration: 2000
             });
 
-            // Navigation to movies page removed
-            console.log('Login successful, but navigation to movies page has been removed');
+            // Navigate to movies page
+            this.router.navigate(['/movies']);
           }
         },
         error: (error) => {

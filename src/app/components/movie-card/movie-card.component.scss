@@ -1,0 +1,39 @@
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.movie-card {
+  max-width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  img {
+    height: 400px;
+    object-fit: cover;
+  }
+
+  mat-card-content {
+    flex-grow: 1;
+  }
+
+  mat-card-actions {
+    padding: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.loading, .error {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2em;
+}
+
+.error {
+  color: red;
+}

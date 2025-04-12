@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 // User interface
 interface User {
@@ -17,15 +18,29 @@ interface User {
   providedIn: 'root'
 })
 export class FetchApiDataService {
-  private apiUrl = 'https://filmapi-ab3ce15dfb3f.herokuapp.com/';
+  private apiUrl = 'https://filmapi-ab3ce15dfb3f.herokuapp.com';
   private token = '';
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) { 
+    console.log('FetchApiDataService initialized with API URL:', this.apiUrl);
+  }
 
   // Get auth token
   private getToken(): string {
+    if (!isPlatformBrowser(this.platformId)) {
+      return '';
+    }
+    
     const token = localStorage.getItem('token');
-    console.log('Token from localStorage:', token ? 'Present' : 'Missing');
+    console.log('FetchApiDataService - Token from localStorage:', {
+      token: token ? 'Present' : 'Missing',
+      tokenValue: token,
+      tokenLength: token ? token.length : 0,
+      tokenFirstChars: token ? token.substring(0, 20) + '...' : 'N/A'
+    });
     
     if (!token) {
       console.warn('No token found in localStorage');
@@ -38,13 +53,25 @@ export class FetchApiDataService {
       return `Bearer ${token}`;
     }
     
+    // Remove any double Bearer prefixes
+    const cleanToken = token.replace('Bearer Bearer ', 'Bearer ');
+    if (cleanToken !== token) {
+      console.warn('Token had double Bearer prefix, cleaned it');
+      return cleanToken;
+    }
+    
     return token;
   }
 
   // Add auth header to requests
   private getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
-    console.log('Getting auth headers with token:', token ? 'Present' : 'Missing');
+    console.log('FetchApiDataService - Getting auth headers:', {
+      token: token ? 'Present' : 'Missing',
+      tokenValue: token,
+      tokenLength: token ? token.length : 0,
+      tokenFirstChars: token ? token.substring(0, 20) + '...' : 'N/A'
+    });
     
     if (!token) {
       console.error('No token available for request');
@@ -58,8 +85,10 @@ export class FetchApiDataService {
       'Content-Type': 'application/json'
     });
     
-    console.log('Request headers created:', {
-      'Authorization': headers.get('Authorization') ? 'Present' : 'Missing',
+    console.log('FetchApiDataService - Request headers created:', {
+      'Authorization': headers.get('Authorization'),
+      'AuthorizationLength': headers.get('Authorization') ? headers.get('Authorization')!.length : 0,
+      'AuthorizationFirstChars': headers.get('Authorization') ? headers.get('Authorization')!.substring(0, 20) + '...' : 'N/A',
       'Content-Type': headers.get('Content-Type')
     });
     
@@ -68,7 +97,7 @@ export class FetchApiDataService {
 
   // User registration
   public userRegistration(userDetails: User): Observable<any> {
-    return this.http.post(this.apiUrl + 'users', userDetails).pipe(
+    return this.http.post(this.apiUrl + '/users', userDetails).pipe(
       catchError(this.handleError)
     );
   }
@@ -76,7 +105,7 @@ export class FetchApiDataService {
   // User login
   public userLogin(userDetails: { Username: string; Password: string }): Observable<any> {
     console.log('Attempting login for user:', userDetails.Username);
-    return this.http.post(this.apiUrl + 'login', userDetails).pipe(
+    return this.http.post(this.apiUrl + '/login', userDetails).pipe(
       catchError((error) => {
         console.error('Login API error:', {
           status: error.status,
@@ -90,8 +119,12 @@ export class FetchApiDataService {
 
   // Get user info
   public getUser(): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return throwError(() => new Error('Cannot access user info on server side'));
+    }
+    
     const username = localStorage.getItem('user');
-    return this.http.get(this.apiUrl + 'users/' + username, {
+    return this.http.get(this.apiUrl + '/users/' + username, {
       headers: this.getAuthHeaders()
     }).pipe(
       catchError(this.handleError)
@@ -100,8 +133,12 @@ export class FetchApiDataService {
 
   // Edit user info
   public editUser(userDetails: User): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return throwError(() => new Error('Cannot edit user on server side'));
+    }
+    
     const username = localStorage.getItem('user');
-    return this.http.put(this.apiUrl + 'users/' + username, userDetails, {
+    return this.http.put(this.apiUrl + '/users/' + username, userDetails, {
       headers: this.getAuthHeaders()
     }).pipe(
       catchError(this.handleError)
@@ -110,9 +147,31 @@ export class FetchApiDataService {
 
   // Delete user
   public deleteUser(): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return throwError(() => new Error('Cannot delete user on server side'));
+    }
+    
     const username = localStorage.getItem('user');
-    return this.http.delete(this.apiUrl + 'users/' + username, {
+    return this.http.delete(this.apiUrl + '/users/' + username, {
       headers: this.getAuthHeaders()
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // Get all movies
+  public getAllMovies(): Observable<any> {
+    console.log('FetchApiDataService - getAllMovies called');
+    const headers = this.getAuthHeaders();
+    console.log('FetchApiDataService - getAllMovies headers:', {
+      'Authorization': headers.get('Authorization'),
+      'AuthorizationLength': headers.get('Authorization') ? headers.get('Authorization')!.length : 0,
+      'AuthorizationFirstChars': headers.get('Authorization') ? headers.get('Authorization')!.substring(0, 20) + '...' : 'N/A',
+      'Content-Type': headers.get('Content-Type')
+    });
+    
+    return this.http.get(this.apiUrl + '/movies', {
+      headers: headers
     }).pipe(
       catchError(this.handleError)
     );

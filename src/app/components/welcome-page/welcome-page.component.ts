@@ -35,7 +35,7 @@ export class WelcomePageComponent {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Login successful, but navigation to movies page has been removed');
+        console.log('Login successful');
       }
     });
   }
