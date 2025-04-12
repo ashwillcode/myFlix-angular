@@ -64,63 +64,33 @@ export class LoginComponent {
               return;
             }
             
-            // Store user and token in localStorage
-            localStorage.setItem('user', result.user.Username);
+            // Store username from the login form
+            localStorage.setItem('user', this.loginForm.value.username);
             
-            // Ensure token has Bearer prefix and is properly formatted
+            // Ensure token has Bearer prefix
             let token = result.token;
-            console.log('Login - Raw token from API:', {
-              token: token,
-              hasBearer: token.startsWith('Bearer '),
-              length: token.length,
-              firstChars: token.substring(0, 20) + '...'
-            });
-            
-            // Remove any existing token first
-            localStorage.removeItem('token');
-            
             if (!token.startsWith('Bearer ')) {
               token = `Bearer ${token}`;
             }
             
-            // Remove any double Bearer prefixes
-            token = token.replace('Bearer Bearer ', 'Bearer ');
-            
             // Store the token
             localStorage.setItem('token', token);
             
-            console.log('Login - Token storage:', {
-              token: token,
+            console.log('Login successful - Token stored:', {
+              token: token.substring(0, 20) + '...',
               hasBearer: token.startsWith('Bearer '),
-              length: token.length,
-              firstChars: token.substring(0, 20) + '...'
+              length: token.length
             });
             
-            // Verify token was stored correctly
-            const storedToken = localStorage.getItem('token');
-            console.log('Login - Token verification:', {
-              storedToken: storedToken,
-              hasBearer: storedToken?.startsWith('Bearer '),
-              length: storedToken?.length,
-              firstChars: storedToken ? storedToken.substring(0, 20) + '...' : 'N/A'
-            });
-
-            // Close dialog first
-            this.dialogRef.close();
-
-            // Show success message
-            this.snackBar.open('Login successful', 'OK', {
-              duration: 2000
-            });
-
-            // Navigate to movies page
+            // Close the dialog and navigate to movies
+            this.dialogRef.close(true);
             this.router.navigate(['/movies']);
           }
         },
         error: (error) => {
-          console.error('Login error details:', error);
+          console.error('Login error:', error);
           this.snackBar.open(
-            error.error || error.message || 'Login failed. Please check your credentials.',
+            error.error?.message || 'Login failed. Please try again.',
             'OK',
             { duration: 2000 }
           );

@@ -47,17 +47,10 @@ export class FetchApiDataService {
       return '';
     }
     
-    // Check if token starts with 'Bearer'
+    // Ensure token has Bearer prefix
     if (!token.startsWith('Bearer ')) {
       console.warn('Token does not start with "Bearer", adding prefix');
       return `Bearer ${token}`;
-    }
-    
-    // Remove any double Bearer prefixes
-    const cleanToken = token.replace('Bearer Bearer ', 'Bearer ');
-    if (cleanToken !== token) {
-      console.warn('Token had double Bearer prefix, cleaned it');
-      return cleanToken;
     }
     
     return token;
@@ -80,19 +73,10 @@ export class FetchApiDataService {
       });
     }
 
-    const headers = new HttpHeaders({
+    return new HttpHeaders({
       'Authorization': token,
       'Content-Type': 'application/json'
     });
-    
-    console.log('FetchApiDataService - Request headers created:', {
-      'Authorization': headers.get('Authorization'),
-      'AuthorizationLength': headers.get('Authorization') ? headers.get('Authorization')!.length : 0,
-      'AuthorizationFirstChars': headers.get('Authorization') ? headers.get('Authorization')!.substring(0, 20) + '...' : 'N/A',
-      'Content-Type': headers.get('Content-Type')
-    });
-    
-    return headers;
   }
 
   // User registration
@@ -124,8 +108,19 @@ export class FetchApiDataService {
     }
     
     const username = localStorage.getItem('user');
+    console.log('FetchApiDataService - getUser called with username:', username);
+    
+    const headers = this.getAuthHeaders();
+    console.log('FetchApiDataService - getUser headers:', {
+      'Authorization': headers.get('Authorization'),
+      'AuthorizationLength': headers.get('Authorization') ? headers.get('Authorization')!.length : 0,
+      'AuthorizationFirstChars': headers.get('Authorization') ? headers.get('Authorization')!.substring(0, 20) + '...' : 'N/A',
+      'Content-Type': headers.get('Content-Type'),
+      rawHeaders: headers // Log the raw headers for debugging
+    });
+    
     return this.http.get(this.apiUrl + '/users/' + username, {
-      headers: this.getAuthHeaders()
+      headers: headers
     }).pipe(
       catchError(this.handleError)
     );
@@ -172,6 +167,34 @@ export class FetchApiDataService {
     
     return this.http.get(this.apiUrl + '/movies', {
       headers: headers
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // Add movie to favorites
+  public addFavoriteMovie(movieId: string): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return throwError(() => new Error('Cannot add favorite movie on server side'));
+    }
+    
+    const username = localStorage.getItem('user');
+    return this.http.post(this.apiUrl + '/users/' + username + '/movies/' + movieId, {}, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // Remove movie from favorites
+  public removeFavoriteMovie(movieId: string): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return throwError(() => new Error('Cannot remove favorite movie on server side'));
+    }
+    
+    const username = localStorage.getItem('user');
+    return this.http.delete(this.apiUrl + '/users/' + username + '/movies/' + movieId, {
+      headers: this.getAuthHeaders()
     }).pipe(
       catchError(this.handleError)
     );

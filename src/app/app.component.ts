@@ -1,6 +1,6 @@
 import { Component, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +14,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
   imports: [
     CommonModule,
     RouterOutlet,
+    RouterLink,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
