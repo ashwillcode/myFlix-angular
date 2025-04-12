@@ -179,7 +179,7 @@ export class FetchApiDataService {
     }
     
     const username = localStorage.getItem('user');
-    return this.http.post(this.apiUrl + '/users/' + username + '/movies/' + movieId, {}, {
+    return this.http.post(this.apiUrl + '/users/' + username + '/favorites', { movieId }, {
       headers: this.getAuthHeaders()
     }).pipe(
       catchError(this.handleError)
@@ -193,7 +193,7 @@ export class FetchApiDataService {
     }
     
     const username = localStorage.getItem('user');
-    return this.http.delete(this.apiUrl + '/users/' + username + '/movies/' + movieId, {
+    return this.http.delete(this.apiUrl + '/users/' + username + '/favorites/' + movieId, {
       headers: this.getAuthHeaders()
     }).pipe(
       catchError(this.handleError)

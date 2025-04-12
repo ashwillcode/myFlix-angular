@@ -35,20 +35,9 @@ export class MovieCardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Only check localStorage in browser environment
     if (isPlatformBrowser(this.platformId)) {
-      // Check if user is logged in
       const token = localStorage.getItem('token');
-      console.log('MovieCardComponent - Token check:', {
-        token: token ? 'Present' : 'Missing',
-        tokenValue: token,
-        hasBearer: token?.startsWith('Bearer '),
-        length: token?.length,
-        firstChars: token ? token.substring(0, 20) + '...' : 'N/A'
-      });
-      
       if (!token) {
-        console.log('No token found, redirecting to welcome page');
         this.router.navigate(['/welcome']);
         return;
       }
@@ -61,13 +50,35 @@ export class MovieCardComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
     
-    if (isPlatformBrowser(this.platformId)) {
-      console.log('Fetching movies with token:', localStorage.getItem('token'));
-    }
-    
     this.fetchApiData.getAllMovies().subscribe({
-      next: (movies: Movie[]) => {
-        this.movies = movies;
+      next: (response: any) => {
+        console.log('Raw API response:', response);
+        
+        if (Array.isArray(response)) {
+          this.movies = response.map(movie => {
+            console.log('Processing movie:', movie);
+            return {
+              _id: movie._id,
+              Title: movie.title || movie.Title || 'No Title',
+              Description: movie.description || movie.Description || 'No Description',
+              Genre: {
+                Name: movie.genre?.name || movie.genre?.Name || movie.Genre?.Name || 'Unknown Genre',
+                Description: movie.genre?.description || movie.genre?.Description || movie.Genre?.Description || ''
+              },
+              Director: {
+                Name: movie.director?.name || movie.director?.Name || movie.Director?.Name || 'Unknown Director',
+                Bio: movie.director?.bio || movie.director?.Bio || movie.Director?.Bio || '',
+                Birth: movie.director?.birth || movie.director?.Birth || movie.Director?.Birth || null
+              },
+              ImagePath: movie.imagePath || movie.ImagePath || '',
+              Featured: movie.featured || movie.Featured || false
+            };
+          });
+          console.log('Processed movies:', this.movies);
+        } else {
+          console.error('Unexpected API response format:', response);
+          this.error = 'Unexpected data format received from server';
+        }
         this.isLoading = false;
       },
       error: (error) => {
@@ -82,7 +93,10 @@ export class MovieCardComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.fetchApiData.getUser().subscribe({
         next: (user) => {
-          this.favoriteMovies = user.FavoriteMovies || [];
+          console.log('User response:', user);
+          // Check both possible property names
+          this.favoriteMovies = user.FavoriteMovies || user.favoriteMovies || [];
+          console.log('Favorite movies:', this.favoriteMovies);
         },
         error: (error) => {
           console.error('Error fetching favorite movies:', error);
@@ -92,28 +106,25 @@ export class MovieCardComponent implements OnInit {
   }
 
   toggleFavorite(movieId: string): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const isFavorite = this.favoriteMovies.includes(movieId);
-      if (isFavorite) {
-        this.fetchApiData.removeFavoriteMovie(movieId).subscribe({
-          next: () => {
-            this.favoriteMovies = this.favoriteMovies.filter(id => id !== movieId);
-          },
-          error: (error) => {
-            console.error('Error removing favorite movie:', error);
-          }
-        });
-      } else {
-        this.fetchApiData.addFavoriteMovie(movieId).subscribe({
-          next: () => {
-            this.favoriteMovies.push(movieId);
-          },
-          error: (error) => {
-            console.error('Error adding favorite movie:', error);
-          }
-        });
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const isFavorite = this.favoriteMovies.includes(movieId);
+    const action = isFavorite ? 
+      this.fetchApiData.removeFavoriteMovie(movieId) : 
+      this.fetchApiData.addFavoriteMovie(movieId);
+
+    action.subscribe({
+      next: (response) => {
+        if (isFavorite) {
+          this.favoriteMovies = this.favoriteMovies.filter(id => id !== movieId);
+        } else {
+          this.favoriteMovies.push(movieId);
+        }
+      },
+      error: (error) => {
+        console.error(`Error ${isFavorite ? 'removing from' : 'adding to'} favorites:`, error);
       }
-    }
+    });
   }
 
   openGenreDialog(genre: any): void {
