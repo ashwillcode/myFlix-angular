@@ -8,7 +8,12 @@
   </div>
 
   <mat-card *ngFor="let movie of movies" class="movie-card">
-    <img mat-card-image [src]="movie.ImagePath" [alt]="movie.Title">
+    <!-- Debug info -->
+    <div *ngIf="!movie.ImagePath" class="debug-info">
+      <p>No image path available for: {{ movie.Title }}</p>
+    </div>
+    
+    <img mat-card-image [src]="movie.ImagePath" [alt]="movie.Title" (error)="onImageError($event, movie)">
     <mat-card-header>
       <mat-card-title>{{ movie.Title }}</mat-card-title>
       <mat-card-subtitle>{{ movie.Genre.Name }}</mat-card-subtitle>

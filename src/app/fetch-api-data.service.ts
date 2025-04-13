@@ -165,10 +165,20 @@ export class FetchApiDataService {
       'Content-Type': headers.get('Content-Type')
     });
     
-    return this.http.get(this.apiUrl + '/movies', {
+    const url = this.apiUrl + '/movies';
+    console.log('FetchApiDataService - getAllMovies URL:', url);
+    
+    return this.http.get(url, {
       headers: headers
     }).pipe(
-      catchError(this.handleError)
+      catchError((error) => {
+        console.error('FetchApiDataService - getAllMovies error:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
+        return this.handleError(error);
+      })
     );
   }
 

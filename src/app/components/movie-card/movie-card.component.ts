@@ -57,7 +57,16 @@ export class MovieCardComponent implements OnInit {
         if (Array.isArray(response)) {
           this.movies = response.map(movie => {
             console.log('Processing movie:', movie);
-            return {
+            
+            // Log image path properties to debug
+            console.log('Image path properties:', {
+              ImagePath: movie.ImagePath,
+              imagepath: movie.imagepath,
+              imagePath: movie.imagePath,
+              allProps: Object.keys(movie).filter(key => key.toLowerCase().includes('image'))
+            });
+            
+            const processedMovie = {
               _id: movie._id,
               Title: movie.Title || movie.title,
               Description: movie.Description || movie.description,
@@ -70,9 +79,13 @@ export class MovieCardComponent implements OnInit {
                 Bio: (movie.Director && movie.Director.Bio) || (movie.director && movie.director.bio) || '',
                 Birth: (movie.Director && movie.Director.Birth) || (movie.director && movie.director.birth) || null
               },
-              ImagePath: movie.ImagePath || movie.imagePath,
+              ImagePath: movie.ImagePath || movie.imagepath || movie.imagePath || '',
               Featured: movie.Featured || movie.featured || false
             };
+            
+            console.log('Processed movie image path:', processedMovie.ImagePath);
+            
+            return processedMovie;
           });
           console.log('Processed movies:', this.movies);
         } else {
@@ -136,5 +149,18 @@ export class MovieCardComponent implements OnInit {
 
   openSynopsisDialog(movie: Movie): void {
     // TODO: Implement synopsis dialog
+  }
+
+  onImageError(event: Event, movie: Movie): void {
+    console.error('Image failed to load:', {
+      movieId: movie._id,
+      movieTitle: movie.Title,
+      imagePath: movie.ImagePath,
+      event: event
+    });
+    
+    // Set a fallback image
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = 'assets/images/placeholder.jpg';
   }
 }
