@@ -4,8 +4,12 @@
   <meta charset="utf-8">
   <title>Redirecting to myFlix</title>
   <script>
-    // Simple redirect to the main app with hash routing
-    window.location.href = "/myFlix-angular/#" + window.location.pathname.replace("/myFlix-angular", "");
+    // GitHub Pages SPA redirect
+    // Store the path segment after the repository name
+    const pathSegment = window.location.pathname.replace('/myFlix-angular', '');
+
+    // Redirect to the base URL with the repo name
+    window.location.replace('/myFlix-angular/');
   </script>
 </head>
 <body>
