@@ -59,19 +59,19 @@ export class MovieCardComponent implements OnInit {
             console.log('Processing movie:', movie);
             return {
               _id: movie._id,
-              Title: movie.title || movie.Title || 'No Title',
-              Description: movie.description || movie.Description || 'No Description',
+              Title: movie.Title || movie.title,
+              Description: movie.Description || movie.description,
               Genre: {
-                Name: movie.genre?.name || movie.genre?.Name || movie.Genre?.Name || 'Unknown Genre',
-                Description: movie.genre?.description || movie.genre?.Description || movie.Genre?.Description || ''
+                Name: (movie.Genre && movie.Genre.Name) || (movie.genre && movie.genre.name) || 'Unknown Genre',
+                Description: (movie.Genre && movie.Genre.Description) || (movie.genre && movie.genre.description) || ''
               },
               Director: {
-                Name: movie.director?.name || movie.director?.Name || movie.Director?.Name || 'Unknown Director',
-                Bio: movie.director?.bio || movie.director?.Bio || movie.Director?.Bio || '',
-                Birth: movie.director?.birth || movie.director?.Birth || movie.Director?.Birth || null
+                Name: (movie.Director && movie.Director.Name) || (movie.director && movie.director.name) || 'Unknown Director',
+                Bio: (movie.Director && movie.Director.Bio) || (movie.director && movie.director.bio) || '',
+                Birth: (movie.Director && movie.Director.Birth) || (movie.director && movie.director.birth) || null
               },
-              ImagePath: movie.imagePath || movie.ImagePath || '',
-              Featured: movie.featured || movie.Featured || false
+              ImagePath: movie.ImagePath || movie.imagePath,
+              Featured: movie.Featured || movie.featured || false
             };
           });
           console.log('Processed movies:', this.movies);
@@ -94,8 +94,7 @@ export class MovieCardComponent implements OnInit {
       this.fetchApiData.getUser().subscribe({
         next: (user) => {
           console.log('User response:', user);
-          // Check both possible property names
-          this.favoriteMovies = user.FavoriteMovies || user.favoriteMovies || [];
+          this.favoriteMovies = user.FavoriteMovies || [];
           console.log('Favorite movies:', this.favoriteMovies);
         },
         error: (error) => {
