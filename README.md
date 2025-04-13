@@ -21,7 +21,7 @@ A modern web application that allows users to browse and manage their favorite m
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/myFlix-angular.git
+git clone https://github.com/awilliams9323/myFlix-angular.git
 cd myFlix-angular
 ```
 
@@ -48,7 +48,17 @@ To create a production build:
 ng build --configuration production
 ```
 
-The build artifacts will be stored in the `dist/` directory.
+The build artifacts will be stored in the `dist/my-flix-angular-client/browser/` directory.
+
+## Deployment
+
+The application is configured for deployment to GitHub Pages. To deploy:
+
+```bash
+npm run deploy
+```
+
+This will build the application for production and deploy it to the GitHub Pages branch.
 
 ## Testing
 
@@ -71,11 +81,12 @@ ng e2e
 
 ## Technologies Used
 
-- Angular 19
-- TypeScript
-- Angular Material
-- RxJS
-- Angular Router
+- Angular 19.2.0
+- TypeScript 5.7.2
+- Angular Material 19.2.8
+- RxJS 7.8.0
+- Angular Router 19.2.0
+- Express.js 4.18.2 (for SSR)
 
 ## Contributing
 
