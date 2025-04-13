@@ -110,20 +110,22 @@ export class UserProfileComponent implements OnInit {
 
   getFavoriteMovies(): void {
     console.log('UserProfileComponent - getFavoriteMovies called');
-    console.log('UserProfileComponent - FavoriteMovies:', this.user.favoriteMovies);
+    console.log('User data:', this.user);
+    console.log('User favorite movies array:', this.user.favoriteMovies);
     
     this.fetchApiData.getAllMovies().subscribe({
       next: (movies) => {
-        console.log('UserProfileComponent - getAllMovies response:', movies);
+        console.log('All movies from API:', movies);
+        console.log('First movie structure:', movies[0]);
         
         // Handle case sensitivity issues with movie properties
         this.favoriteMovies = movies.filter((movie: any) => {
-          const movieId = movie._id;
+          const movieId = movie.id;
           const isFavorite = this.user.favoriteMovies?.includes(movieId);
           console.log(`Movie ${movieId} (${movie.Title || movie.title}): ${isFavorite ? 'Favorite' : 'Not favorite'}`);
           return isFavorite;
         }).map((movie: any) => ({
-          _id: movie._id,
+          _id: movie.id,
           Title: movie.Title || movie.title,
           Description: movie.Description || movie.description,
           ImagePath: movie.ImagePath || movie.imagepath || movie.imagePath || '',
@@ -139,7 +141,7 @@ export class UserProfileComponent implements OnInit {
           Featured: movie.Featured || movie.featured || false
         }));
         
-        console.log('UserProfileComponent - Processed favorite movies:', this.favoriteMovies);
+        console.log('Filtered favorite movies:', this.favoriteMovies);
       },
       error: (error) => {
         console.error('UserProfileComponent - Error fetching favorite movies:', error);
@@ -229,6 +231,30 @@ export class UserProfileComponent implements OnInit {
         }
       });
     }
+  }
+
+  onRemoveFavorite(movieId: string): void {
+    this.fetchApiData.removeFavoriteMovie(movieId).subscribe({
+      next: (response) => {
+        this.snackBar.open('Movie removed from favorites', 'OK', {
+          duration: 2000
+        });
+        // Update the user's favorite movies
+        this.user.favoriteMovies = this.user.favoriteMovies.filter(
+          (id: string) => id !== movieId
+        );
+        // Update the displayed favorite movies
+        this.favoriteMovies = this.favoriteMovies.filter(
+          (movie) => movie._id !== movieId
+        );
+      },
+      error: (error) => {
+        console.error('Error removing movie from favorites:', error);
+        this.snackBar.open('Error removing movie from favorites', 'OK', {
+          duration: 2000
+        });
+      }
+    });
   }
 
   // Password match validator

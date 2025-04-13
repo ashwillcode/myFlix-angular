@@ -92,11 +92,22 @@
         <h3>Favorite Movies</h3>
         <div class="movie-grid">
           <mat-card *ngFor="let movie of favoriteMovies" class="movie-card">
-            <img mat-card-image [src]="movie.ImagePath" [alt]="movie.Title">
-            <mat-card-header>
+            <div class="image-container">
+              <button class="favorite-button" mat-icon-button color="warn" (click)="onRemoveFavorite(movie._id)">
+                <mat-icon>favorite</mat-icon>
+              </button>
+              <img mat-card-image [src]="movie.ImagePath" [alt]="movie.Title">
+            </div>
+            <mat-card-content>
               <mat-card-title>{{ movie.Title }}</mat-card-title>
-            </mat-card-header>
+              <mat-card-subtitle>{{ movie.Director.Name }}</mat-card-subtitle>
+              <p class="movie-description">{{ movie.Description }}</p>
+            </mat-card-content>
           </mat-card>
+        </div>
+        <div *ngIf="favoriteMovies.length === 0" class="no-favorites">
+          <mat-icon>movie</mat-icon>
+          <p>No favorite movies yet</p>
         </div>
       </div>
     </mat-card-content>
