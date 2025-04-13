@@ -212,6 +212,36 @@ export class FetchApiDataService {
       return throwError(() => new Error('Invalid movie ID format'));
     }
     
+    // Log the exact format of the movie ID
+    console.log('FetchApiDataService - Movie ID format:', {
+      movieId,
+      movieIdType: typeof movieId,
+      movieIdLength: movieId.length,
+      movieIdFirstChars: movieId.substring(0, 10) + '...'
+    });
+    
+    // The API might be expecting a specific format for the movie ID
+    // Try to ensure it's in the correct format (e.g., MongoDB ObjectId format)
+    // This is a common format for MongoDB ObjectIds: 24 hexadecimal characters
+    if (!/^[0-9a-fA-F]{24}$/.test(movieId)) {
+      console.warn('FetchApiDataService - Movie ID does not match expected format (24 hex chars)');
+      
+      // If the movie ID is not in the expected format, try to find a valid ID in the movies array
+      // This is a workaround for the issue where the movie ID might not be in the expected format
+      // In a real application, you would want to ensure that the movie IDs are in the correct format
+      // when they are fetched from the API
+      const movies = JSON.parse(localStorage.getItem('movies') || '[]');
+      const movie = movies.find((m: any) => m._id === movieId);
+      
+      if (movie && movie.id) {
+        console.log('FetchApiDataService - Found alternative ID:', movie.id);
+        movieId = movie.id;
+      } else {
+        console.error('FetchApiDataService - Could not find a valid ID for movie:', movieId);
+        return throwError(() => new Error('Invalid movie ID format'));
+      }
+    }
+    
     const url = this.apiUrl + '/users/' + username + '/favorites';
     console.log('FetchApiDataService - addFavoriteMovie URL:', url);
     console.log('FetchApiDataService - addFavoriteMovie payload:', { movieId });

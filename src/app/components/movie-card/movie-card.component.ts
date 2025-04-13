@@ -7,6 +7,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FetchApiDataService } from '../../fetch-api-data.service';
 import { Movie } from '../../models/movie';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-movie-card',
@@ -31,6 +32,7 @@ export class MovieCardComponent implements OnInit {
     private fetchApiData: FetchApiDataService,
     private router: Router,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -58,6 +60,18 @@ export class MovieCardComponent implements OnInit {
           this.movies = response.map(movie => {
             console.log('Processing movie:', movie);
             
+            // Log the exact format of the movie ID
+            console.log('Movie ID format:', {
+              _id: movie._id,
+              id: movie.id,
+              _idType: typeof movie._id,
+              idType: typeof movie.id,
+              _idLength: movie._id ? movie._id.length : 0,
+              idLength: movie.id ? movie.id.length : 0,
+              _idFirstChars: movie._id ? movie._id.substring(0, 10) + '...' : 'N/A',
+              idFirstChars: movie.id ? movie.id.substring(0, 10) + '...' : 'N/A'
+            });
+            
             // Log image path properties to debug
             console.log('Image path properties:', {
               ImagePath: movie.ImagePath,
@@ -66,8 +80,22 @@ export class MovieCardComponent implements OnInit {
               allProps: Object.keys(movie).filter(key => key.toLowerCase().includes('image'))
             });
             
+            // Use the id property if _id is not available
+            const movieId = movie._id || movie.id;
+            
+            // Ensure movieId exists and is valid
+            if (!movieId) {
+              console.error('Movie missing both _id and id properties:', movie);
+              // Generate a temporary ID if none exists (this should be rare)
+              movie._id = 'temp_' + Math.random().toString(36).substring(2, 9);
+            } else if (!movie._id && movie.id) {
+              // If we have id but not _id, set _id to id
+              movie._id = movie.id;
+            }
+            
             const processedMovie = {
               _id: movie._id,
+              id: movie.id,
               Title: movie.Title || movie.title,
               Description: movie.Description || movie.description,
               Genre: {
@@ -83,7 +111,7 @@ export class MovieCardComponent implements OnInit {
               Featured: movie.Featured || movie.featured || false
             };
             
-            console.log('Processed movie image path:', processedMovie.ImagePath);
+            console.log('Processed movie:', processedMovie);
             
             return processedMovie;
           });
@@ -107,7 +135,8 @@ export class MovieCardComponent implements OnInit {
       this.fetchApiData.getUser().subscribe({
         next: (user) => {
           console.log('User response:', user);
-          this.favoriteMovies = user.FavoriteMovies || [];
+          // Handle both FavoriteMovies and favoriteMovies properties
+          this.favoriteMovies = user.FavoriteMovies || user.favoriteMovies || [];
           console.log('Favorite movies:', this.favoriteMovies);
         },
         error: (error) => {
@@ -118,8 +147,6 @@ export class MovieCardComponent implements OnInit {
   }
 
   toggleFavorite(movieId: string): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-
     console.log('MovieCardComponent - toggleFavorite called with movieId:', movieId);
     
     // Ensure movieId is a string and not empty
@@ -128,26 +155,69 @@ export class MovieCardComponent implements OnInit {
       return;
     }
     
-    const isFavorite = this.favoriteMovies.includes(movieId);
-    console.log(`MovieCardComponent - Movie ${movieId} is ${isFavorite ? 'already' : 'not'} a favorite`);
-    
-    const action = isFavorite ? 
-      this.fetchApiData.removeFavoriteMovie(movieId) : 
-      this.fetchApiData.addFavoriteMovie(movieId);
-
-    action.subscribe({
-      next: (response) => {
-        console.log('MovieCardComponent - Toggle favorite response:', response);
-        if (isFavorite) {
-          this.favoriteMovies = this.favoriteMovies.filter(id => id !== movieId);
-        } else {
-          this.favoriteMovies.push(movieId);
-        }
-      },
-      error: (error) => {
-        console.error(`MovieCardComponent - Error ${isFavorite ? 'removing from' : 'adding to'} favorites:`, error);
-      }
+    // Log the exact format of the movie ID
+    console.log('MovieCardComponent - Movie ID format:', {
+      movieId,
+      movieIdType: typeof movieId,
+      movieIdLength: movieId.length,
+      movieIdFirstChars: movieId.substring(0, 10) + '...'
     });
+    
+    // Find the movie in the movies array to ensure it exists
+    const movie = this.movies.find(m => m._id === movieId);
+    if (!movie) {
+      console.error('MovieCardComponent - Movie not found with _id:', movieId);
+      // Try to find by id property as a fallback
+      const movieById = this.movies.find(m => m.id === movieId);
+      if (movieById) {
+        console.log('MovieCardComponent - Found movie by id property:', movieById);
+        // Update the movieId to use the _id property
+        movieId = movieById._id;
+      } else {
+        console.error('MovieCardComponent - Movie not found with either _id or id:', movieId);
+        return;
+      }
+    }
+    
+    // Check if the movie is already a favorite
+    const isFavorite = this.favoriteMovies.includes(movieId);
+    console.log('MovieCardComponent - Is favorite:', isFavorite);
+    
+    if (isFavorite) {
+      // Remove from favorites
+      this.fetchApiData.removeFavoriteMovie(movieId).subscribe({
+        next: (response) => {
+          console.log('MovieCardComponent - Remove favorite response:', response);
+          this.favoriteMovies = this.favoriteMovies.filter(id => id !== movieId);
+          this.snackBar.open('Movie removed from favorites', 'OK', {
+            duration: 2000
+          });
+        },
+        error: (error) => {
+          console.error('MovieCardComponent - Error removing favorite:', error);
+          this.snackBar.open('Error removing movie from favorites', 'OK', {
+            duration: 2000
+          });
+        }
+      });
+    } else {
+      // Add to favorites
+      this.fetchApiData.addFavoriteMovie(movieId).subscribe({
+        next: (response) => {
+          console.log('MovieCardComponent - Add favorite response:', response);
+          this.favoriteMovies.push(movieId);
+          this.snackBar.open('Movie added to favorites', 'OK', {
+            duration: 2000
+          });
+        },
+        error: (error) => {
+          console.error('MovieCardComponent - Error adding favorite:', error);
+          this.snackBar.open('Error adding movie to favorites', 'OK', {
+            duration: 2000
+          });
+        }
+      });
+    }
   }
 
   openGenreDialog(genre: any): void {

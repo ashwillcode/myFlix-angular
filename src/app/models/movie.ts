@@ -1,5 +1,6 @@
 export interface Movie {
   _id: string;
+  id?: string; // Optional id property that may be present in API responses
   Title: string;
   Description: string;
   Genre: {

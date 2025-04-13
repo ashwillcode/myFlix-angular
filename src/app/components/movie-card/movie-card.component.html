@@ -35,7 +35,7 @@
         <mat-icon>description</mat-icon>
         Synopsis
       </button>
-      <button mat-icon-button color="warn" (click)="toggleFavorite(movie._id)">
+      <button mat-icon-button color="warn" (click)="movie._id ? toggleFavorite(movie._id) : null">
         <mat-icon>{{ favoriteMovies.includes(movie._id) ? 'favorite' : 'favorite_border' }}</mat-icon>
       </button>
     </mat-card-actions>
