@@ -45,11 +45,12 @@ export class UserProfileComponent implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.userForm = this.formBuilder.group({
-      Username: ['', [Validators.required]],
-      Password: ['', [Validators.required]],
-      Email: ['', [Validators.required, Validators.email]],
-      Birthday: [null]
-    });
+      username: ['', [Validators.required]],
+      password: ['', [Validators.required]],
+      confirmPassword: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      birthDate: [null]
+    }, { validator: this.passwordMatchValidator });
   }
 
   ngOnInit(): void {
@@ -60,61 +61,56 @@ export class UserProfileComponent implements OnInit {
 
   getUser(): void {
     this.isLoading = true;
-    console.log('UserProfileComponent - getUser called');
     
     // Check if user is stored in localStorage
     if (isPlatformBrowser(this.platformId)) {
-      const storedUser = localStorage.getItem('user');
-      const storedToken = localStorage.getItem('token');
-      console.log('UserProfileComponent - localStorage check:', {
-        storedUser,
-        storedToken: storedToken ? 'Present' : 'Missing',
-        tokenLength: storedToken ? storedToken.length : 0
-      });
+      const username = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+      
+      if (!username || !token) {
+        this.router.navigate(['/welcome']);
+        return;
+      }
     }
     
     this.fetchApiData.getUser().subscribe({
       next: (user) => {
-        console.log('UserProfileComponent - getUser response:', user);
+        // Normalize the user data
+        const birthDate = user.Birthday || user.birthday || user.BirthDate || user.birthDate;
         
-        // Handle case sensitivity issues
         this.user = {
-          Username: user.Username || user.username,
-          Email: user.Email || user.email,
-          Birthday: user.Birthday || user.birthday || user.BirthDate || user.birthDate,
-          FavoriteMovies: user.FavoriteMovies || user.favoriteMovies || user.favoritemovies || []
+          username: user.Username || user.username,
+          email: user.Email || user.email,
+          birthDate: birthDate ? this.parseDateNoTimezone(birthDate) : null,
+          favoriteMovies: user.FavoriteMovies || user.favoriteMovies || []
         };
         
-        // Check if user has the expected properties
-        console.log('UserProfileComponent - User properties:', {
-          hasUsername: 'Username' in this.user,
-          hasEmail: 'Email' in this.user,
-          hasBirthday: 'Birthday' in this.user,
-          hasFavoriteMovies: 'FavoriteMovies' in this.user,
-          allProps: Object.keys(this.user)
+        // Update the form with normalized user data
+        this.userForm.patchValue({
+          username: this.user.username,
+          email: this.user.email,
+          birthDate: this.user.birthDate,
+          password: '',
+          confirmPassword: ''
         });
         
-        this.userForm.patchValue({
-          Username: this.user.Username,
-          Email: this.user.Email,
-          Birthday: this.user.Birthday ? new Date(this.user.Birthday) : null
-        });
-        this.getFavoriteMovies();
         this.isLoading = false;
+        this.getFavoriteMovies();
       },
       error: (error) => {
-        console.error('UserProfileComponent - Error fetching user:', error);
+        console.error('Error fetching user:', error);
         this.isLoading = false;
-        this.snackBar.open('Error fetching user data: ' + (error.message || 'Unknown error'), 'OK', {
-          duration: 5000
-        });
+        
+        if (error.status === 401 || error.status === 404) {
+          this.router.navigate(['/welcome']);
+        }
       }
     });
   }
 
   getFavoriteMovies(): void {
     console.log('UserProfileComponent - getFavoriteMovies called');
-    console.log('UserProfileComponent - FavoriteMovies:', this.user.FavoriteMovies);
+    console.log('UserProfileComponent - FavoriteMovies:', this.user.favoriteMovies);
     
     this.fetchApiData.getAllMovies().subscribe({
       next: (movies) => {
@@ -123,7 +119,7 @@ export class UserProfileComponent implements OnInit {
         // Handle case sensitivity issues with movie properties
         this.favoriteMovies = movies.filter((movie: any) => {
           const movieId = movie._id;
-          const isFavorite = this.user.FavoriteMovies?.includes(movieId);
+          const isFavorite = this.user.favoriteMovies?.includes(movieId);
           console.log(`Movie ${movieId} (${movie.Title || movie.title}): ${isFavorite ? 'Favorite' : 'Not favorite'}`);
           return isFavorite;
         }).map((movie: any) => ({
@@ -155,9 +151,11 @@ export class UserProfileComponent implements OnInit {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) {
       this.userForm.patchValue({
-        Username: this.user.Username,
-        Email: this.user.Email,
-        Birthday: this.user.Birthday ? new Date(this.user.Birthday) : null
+        username: this.user.username,
+        email: this.user.email,
+        birthDate: this.user.birthDate,
+        password: '',
+        confirmPassword: ''
       });
     }
   }
@@ -165,21 +163,46 @@ export class UserProfileComponent implements OnInit {
   updateUser(): void {
     if (this.userForm.valid) {
       this.isLoading = true;
-      this.fetchApiData.editUser(this.userForm.value).subscribe({
-        next: (result) => {
-          this.user = result;
-          this.isEditing = false;
-          this.isLoading = false;
-          this.snackBar.open('Profile updated successfully', 'OK', {
+      
+      // Create data object with all required fields
+      const userData: any = {
+        username: this.userForm.get('username')?.value || this.user.username,
+        email: this.userForm.get('email')?.value || this.user.email,
+      };
+
+      // Add optional fields if they have values
+      const password = this.userForm.get('password')?.value;
+      const birthDate = this.userForm.get('birthDate')?.value;
+
+      if (password) {
+        userData.password = password;
+      }
+
+      if (birthDate) {
+        // Set time to noon to avoid timezone issues
+        const dateToUse = new Date(birthDate);
+        dateToUse.setHours(12, 0, 0, 0);
+        userData.birthDate = this.formatDateForAPI(dateToUse);
+      }
+
+      console.log('Sending update data:', userData);
+
+      this.fetchApiData.editUser(userData).subscribe({
+        next: (response) => {
+          console.log('Update successful:', response);
+          this.snackBar.open('Profile updated successfully!', 'OK', {
             duration: 2000
           });
+          this.isLoading = false;
+          this.isEditing = false;
+          this.getUser();
         },
         error: (error) => {
           console.error('Error updating user:', error);
-          this.isLoading = false;
-          this.snackBar.open('Error updating profile', 'OK', {
+          this.snackBar.open(error, 'OK', {
             duration: 2000
           });
+          this.isLoading = false;
         }
       });
     }
@@ -206,5 +229,26 @@ export class UserProfileComponent implements OnInit {
         }
       });
     }
+  }
+
+  // Password match validator
+  private passwordMatchValidator(g: FormGroup) {
+    const password = g.get('password')?.value;
+    const confirmPassword = g.get('confirmPassword')?.value;
+    return password === confirmPassword ? null : { 'mismatch': true };
+  }
+
+  // Helper method to parse date without timezone offset
+  private parseDateNoTimezone(dateStr: string): Date {
+    const [year, month, day] = dateStr.split('-').map(num => parseInt(num, 10));
+    return new Date(year, month - 1, day, 12, 0, 0);
+  }
+
+  // Helper method to format date for API
+  private formatDateForAPI(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

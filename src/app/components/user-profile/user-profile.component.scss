@@ -56,3 +56,58 @@ form {
   padding: 20px;
   font-size: 1.2em;
 }
+
+.password-info {
+  margin-top: -12px;
+  margin-bottom: 4px;
+  padding-left: 4px;
+  .info-text {
+    display: flex;
+    align-items: center;
+    margin: 2px 0;
+    color: #999;
+    font-size: 12px;
+
+    .info-icon {
+      margin-right: 4px;
+      font-size: 14px;
+      color: #999;
+      height: 14px;
+      width: 14px;
+    }
+  }
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.button-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.profile-info {
+  margin-top: 24px;
+}
+
+.favorite-movies {
+  margin-top: 32px;
+
+  .movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .movie-card {
+    img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+    }
+  }
+}
