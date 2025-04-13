@@ -120,13 +120,24 @@ export class MovieCardComponent implements OnInit {
   toggleFavorite(movieId: string): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
+    console.log('MovieCardComponent - toggleFavorite called with movieId:', movieId);
+    
+    // Ensure movieId is a string and not empty
+    if (!movieId || typeof movieId !== 'string') {
+      console.error('MovieCardComponent - Invalid movieId:', movieId);
+      return;
+    }
+    
     const isFavorite = this.favoriteMovies.includes(movieId);
+    console.log(`MovieCardComponent - Movie ${movieId} is ${isFavorite ? 'already' : 'not'} a favorite`);
+    
     const action = isFavorite ? 
       this.fetchApiData.removeFavoriteMovie(movieId) : 
       this.fetchApiData.addFavoriteMovie(movieId);
 
     action.subscribe({
       next: (response) => {
+        console.log('MovieCardComponent - Toggle favorite response:', response);
         if (isFavorite) {
           this.favoriteMovies = this.favoriteMovies.filter(id => id !== movieId);
         } else {
@@ -134,7 +145,7 @@ export class MovieCardComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error(`Error ${isFavorite ? 'removing from' : 'adding to'} favorites:`, error);
+        console.error(`MovieCardComponent - Error ${isFavorite ? 'removing from' : 'adding to'} favorites:`, error);
       }
     });
   }

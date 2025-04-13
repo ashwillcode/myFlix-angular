@@ -60,36 +60,93 @@ export class UserProfileComponent implements OnInit {
 
   getUser(): void {
     this.isLoading = true;
+    console.log('UserProfileComponent - getUser called');
+    
+    // Check if user is stored in localStorage
+    if (isPlatformBrowser(this.platformId)) {
+      const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('token');
+      console.log('UserProfileComponent - localStorage check:', {
+        storedUser,
+        storedToken: storedToken ? 'Present' : 'Missing',
+        tokenLength: storedToken ? storedToken.length : 0
+      });
+    }
+    
     this.fetchApiData.getUser().subscribe({
       next: (user) => {
-        this.user = user;
+        console.log('UserProfileComponent - getUser response:', user);
+        
+        // Handle case sensitivity issues
+        this.user = {
+          Username: user.Username || user.username,
+          Email: user.Email || user.email,
+          Birthday: user.Birthday || user.birthday || user.BirthDate || user.birthDate,
+          FavoriteMovies: user.FavoriteMovies || user.favoriteMovies || user.favoritemovies || []
+        };
+        
+        // Check if user has the expected properties
+        console.log('UserProfileComponent - User properties:', {
+          hasUsername: 'Username' in this.user,
+          hasEmail: 'Email' in this.user,
+          hasBirthday: 'Birthday' in this.user,
+          hasFavoriteMovies: 'FavoriteMovies' in this.user,
+          allProps: Object.keys(this.user)
+        });
+        
         this.userForm.patchValue({
-          Username: user.Username,
-          Email: user.Email,
-          Birthday: user.Birthday ? new Date(user.Birthday) : null
+          Username: this.user.Username,
+          Email: this.user.Email,
+          Birthday: this.user.Birthday ? new Date(this.user.Birthday) : null
         });
         this.getFavoriteMovies();
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error fetching user:', error);
+        console.error('UserProfileComponent - Error fetching user:', error);
         this.isLoading = false;
-        this.snackBar.open('Error fetching user data', 'OK', {
-          duration: 2000
+        this.snackBar.open('Error fetching user data: ' + (error.message || 'Unknown error'), 'OK', {
+          duration: 5000
         });
       }
     });
   }
 
   getFavoriteMovies(): void {
+    console.log('UserProfileComponent - getFavoriteMovies called');
+    console.log('UserProfileComponent - FavoriteMovies:', this.user.FavoriteMovies);
+    
     this.fetchApiData.getAllMovies().subscribe({
       next: (movies) => {
-        this.favoriteMovies = movies.filter((movie: any) => 
-          this.user.FavoriteMovies?.includes(movie._id)
-        );
+        console.log('UserProfileComponent - getAllMovies response:', movies);
+        
+        // Handle case sensitivity issues with movie properties
+        this.favoriteMovies = movies.filter((movie: any) => {
+          const movieId = movie._id;
+          const isFavorite = this.user.FavoriteMovies?.includes(movieId);
+          console.log(`Movie ${movieId} (${movie.Title || movie.title}): ${isFavorite ? 'Favorite' : 'Not favorite'}`);
+          return isFavorite;
+        }).map((movie: any) => ({
+          _id: movie._id,
+          Title: movie.Title || movie.title,
+          Description: movie.Description || movie.description,
+          ImagePath: movie.ImagePath || movie.imagepath || movie.imagePath || '',
+          Genre: {
+            Name: (movie.Genre && movie.Genre.Name) || (movie.genre && movie.genre.name) || 'Unknown Genre',
+            Description: (movie.Genre && movie.Genre.Description) || (movie.genre && movie.genre.description) || ''
+          },
+          Director: {
+            Name: (movie.Director && movie.Director.Name) || (movie.director && movie.director.name) || 'Unknown Director',
+            Bio: (movie.Director && movie.Director.Bio) || (movie.director && movie.director.bio) || '',
+            Birth: (movie.Director && movie.Director.Birth) || (movie.director && movie.director.birth) || null
+          },
+          Featured: movie.Featured || movie.featured || false
+        }));
+        
+        console.log('UserProfileComponent - Processed favorite movies:', this.favoriteMovies);
       },
       error: (error) => {
-        console.error('Error fetching favorite movies:', error);
+        console.error('UserProfileComponent - Error fetching favorite movies:', error);
       }
     });
   }

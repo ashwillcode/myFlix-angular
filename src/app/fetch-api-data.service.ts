@@ -110,6 +110,11 @@ export class FetchApiDataService {
     const username = localStorage.getItem('user');
     console.log('FetchApiDataService - getUser called with username:', username);
     
+    if (!username) {
+      console.error('FetchApiDataService - No username found in localStorage');
+      return throwError(() => new Error('No username found. Please log in again.'));
+    }
+    
     const headers = this.getAuthHeaders();
     console.log('FetchApiDataService - getUser headers:', {
       'Authorization': headers.get('Authorization'),
@@ -119,10 +124,20 @@ export class FetchApiDataService {
       rawHeaders: headers // Log the raw headers for debugging
     });
     
-    return this.http.get(this.apiUrl + '/users/' + username, {
+    const url = this.apiUrl + '/users/' + username;
+    console.log('FetchApiDataService - getUser URL:', url);
+    
+    return this.http.get(url, {
       headers: headers
     }).pipe(
-      catchError(this.handleError)
+      catchError((error) => {
+        console.error('FetchApiDataService - getUser error:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
+        return this.handleError(error);
+      })
     );
   }
 
@@ -189,10 +204,29 @@ export class FetchApiDataService {
     }
     
     const username = localStorage.getItem('user');
-    return this.http.post(this.apiUrl + '/users/' + username + '/favorites', { movieId }, {
+    console.log('FetchApiDataService - addFavoriteMovie called with movieId:', movieId);
+    
+    // Ensure movieId is a string and not empty
+    if (!movieId || typeof movieId !== 'string') {
+      console.error('FetchApiDataService - Invalid movieId:', movieId);
+      return throwError(() => new Error('Invalid movie ID format'));
+    }
+    
+    const url = this.apiUrl + '/users/' + username + '/favorites';
+    console.log('FetchApiDataService - addFavoriteMovie URL:', url);
+    console.log('FetchApiDataService - addFavoriteMovie payload:', { movieId });
+    
+    return this.http.post(url, { movieId }, {
       headers: this.getAuthHeaders()
     }).pipe(
-      catchError(this.handleError)
+      catchError((error) => {
+        console.error('FetchApiDataService - addFavoriteMovie error:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
+        return this.handleError(error);
+      })
     );
   }
 
