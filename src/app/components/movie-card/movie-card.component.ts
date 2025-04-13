@@ -63,11 +63,14 @@ export class MovieCardComponent implements OnInit {
    */
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      // Check for authentication token before proceeding
       const token = localStorage.getItem('token');
       if (!token) {
+        // Redirect to welcome page if not authenticated
         this.router.navigate(['/welcome']);
         return;
       }
+      // Load initial data
       this.getMovies();
       this.getFavoriteMovies();
     }
@@ -87,9 +90,7 @@ export class MovieCardComponent implements OnInit {
         
         if (Array.isArray(response)) {
           this.movies = response.map(movie => {
-            console.log('Processing movie:', movie);
-            
-            // Log the exact format of the movie ID
+            // Debug logging for movie ID format
             console.log('Movie ID format:', {
               _id: movie._id,
               id: movie.id,
@@ -101,7 +102,7 @@ export class MovieCardComponent implements OnInit {
               idFirstChars: movie.id ? movie.id.substring(0, 10) + '...' : 'N/A'
             });
             
-            // Log image path properties to debug
+            // Debug logging for image paths
             console.log('Image path properties:', {
               ImagePath: movie.ImagePath,
               imagepath: movie.imagepath,
@@ -109,23 +110,24 @@ export class MovieCardComponent implements OnInit {
               allProps: Object.keys(movie).filter(key => key.toLowerCase().includes('image'))
             });
             
-            // Use the id property if _id is not available
+            // Handle different possible ID field names
             const movieId = movie._id || movie.id;
             
-            // Ensure movieId exists and is valid
+            // Ensure movie has a valid ID
             if (!movieId) {
               console.error('Movie missing both _id and id properties:', movie);
-              // Generate a temporary ID if none exists (this should be rare)
+              // Generate temporary ID as fallback
               movie._id = 'temp_' + Math.random().toString(36).substring(2, 9);
             } else if (!movie._id && movie.id) {
-              // If we have id but not _id, set _id to id
+              // Normalize ID field
               movie._id = movie.id;
             }
             
+            // Normalize movie data structure to handle API inconsistencies
             const processedMovie = {
               _id: movie._id,
               id: movie.id,
-              Title: movie.Title || movie.title,
+              Title: movie.Title || movie.title, // Handle case variations
               Description: movie.Description || movie.description,
               Genre: {
                 Name: (movie.Genre && movie.Genre.Name) || (movie.genre && movie.genre.name) || 'Unknown Genre',
@@ -140,12 +142,10 @@ export class MovieCardComponent implements OnInit {
               Featured: movie.Featured || movie.featured || false
             };
             
-            console.log('Processed movie:', processedMovie);
-            
             return processedMovie;
           });
-          console.log('Processed movies:', this.movies);
         } else {
+          // Handle invalid API response format
           console.error('Unexpected API response format:', response);
           this.error = 'Unexpected data format received from server';
         }
@@ -167,8 +167,7 @@ export class MovieCardComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.fetchApiData.getUser().subscribe({
         next: (user) => {
-          console.log('User response:', user);
-          // Handle both FavoriteMovies and favoriteMovies properties
+          // Handle different possible property names for favorites
           this.favoriteMovies = user.FavoriteMovies || user.favoriteMovies || [];
           console.log('Favorite movies:', this.favoriteMovies);
         },
@@ -184,54 +183,48 @@ export class MovieCardComponent implements OnInit {
    * @param movieId - ID of the movie to toggle
    */
   toggleFavorite(movieId: string): void {
-    console.log('MovieCardComponent - toggleFavorite called with movieId:', movieId);
-    
-    // Ensure movieId is a string and not empty
+    // Input validation
     if (!movieId || typeof movieId !== 'string') {
-      console.error('MovieCardComponent - Invalid movieId:', movieId);
+      console.error('Invalid movieId:', movieId);
       return;
     }
     
-    // Log the exact format of the movie ID
-    console.log('MovieCardComponent - Movie ID format:', {
+    // Debug logging
+    console.log('Movie ID format:', {
       movieId,
       movieIdType: typeof movieId,
       movieIdLength: movieId.length,
       movieIdFirstChars: movieId.substring(0, 10) + '...'
     });
     
-    // Find the movie in the movies array to ensure it exists
+    // Verify movie exists in the loaded movies
     const movie = this.movies.find(m => m._id === movieId);
     if (!movie) {
-      console.error('MovieCardComponent - Movie not found with _id:', movieId);
-      // Try to find by id property as a fallback
+      // Try fallback to id property
       const movieById = this.movies.find(m => m.id === movieId);
       if (movieById) {
-        console.log('MovieCardComponent - Found movie by id property:', movieById);
-        // Update the movieId to use the _id property
         movieId = movieById._id;
       } else {
-        console.error('MovieCardComponent - Movie not found with either _id or id:', movieId);
+        console.error('Movie not found:', movieId);
         return;
       }
     }
     
-    // Check if the movie is already a favorite
+    // Check current favorite status
     const isFavorite = this.favoriteMovies.includes(movieId);
-    console.log('MovieCardComponent - Is favorite:', isFavorite);
     
     if (isFavorite) {
       // Remove from favorites
       this.fetchApiData.removeFavoriteMovie(movieId).subscribe({
         next: (response) => {
-          console.log('MovieCardComponent - Remove favorite response:', response);
+          // Update local state
           this.favoriteMovies = this.favoriteMovies.filter(id => id !== movieId);
           this.snackBar.open('Movie removed from favorites', 'OK', {
             duration: 2000
           });
         },
         error: (error) => {
-          console.error('MovieCardComponent - Error removing favorite:', error);
+          console.error('Error removing favorite:', error);
           this.snackBar.open('Error removing movie from favorites', 'OK', {
             duration: 2000
           });
@@ -241,14 +234,14 @@ export class MovieCardComponent implements OnInit {
       // Add to favorites
       this.fetchApiData.addFavoriteMovie(movieId).subscribe({
         next: (response) => {
-          console.log('MovieCardComponent - Add favorite response:', response);
+          // Update local state
           this.favoriteMovies.push(movieId);
           this.snackBar.open('Movie added to favorites', 'OK', {
             duration: 2000
           });
         },
         error: (error) => {
-          console.error('MovieCardComponent - Error adding favorite:', error);
+          console.error('Error adding favorite:', error);
           this.snackBar.open('Error adding movie to favorites', 'OK', {
             duration: 2000
           });

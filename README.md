@@ -1,106 +1,130 @@
 # MyFlix Angular Client
 
-A modern web application that allows users to browse and manage their favorite movies. Built with Angular, this client-side application provides a responsive and intuitive user interface for movie enthusiasts.
+## Description
+MyFlix Angular Client is a single-page, responsive movie application built with Angular. It provides users with access to information about different movies, directors, and genres. Users can sign up, update their personal information, and create a list of favorite movies.
 
-## Features
-
-- User authentication (signup, login, logout)
-- Browse movies from a comprehensive database
-- View detailed information about movies
-- Add/remove movies to/from favorites
+## Key Features
+- User registration and authentication
+- Browse a collection of movies
+- View detailed information about movies, directors, and genres
+- Add/remove movies to/from a list of favorites
 - Update user profile information
 - Responsive design for various screen sizes
 
-## Prerequisites
+## Technical Details
+- **Built with Angular** (Version 19.2.0)
+- **Uses Angular Material** for UI components
+- **Implements TypeDoc** for documentation
+- **Follows Material Design** principles
+- **Responsive Layout** using Flexbox and CSS Grid
+- **State Management** using Angular services
+- **Form Validation** using Angular's Reactive Forms
 
-- Node.js (version 18.x or higher)
-- npm (comes with Node.js)
-- Angular CLI (`npm install -g @angular/cli`)
+## Dependencies
+- Angular CLI: 19.2.6
+- Angular Material: 19.2.8
+- TypeDoc: Latest Version
+- RxJS: ~7.8.0
+- TypeScript: ~5.7.2
 
-## Installation
-
+## Installation and Setup
 1. Clone the repository:
-```bash
-git clone https://github.com/awilliams9323/myFlix-angular.git
-cd myFlix-angular
-```
+   ```bash
+   git clone https://github.com/your-username/myFlix-angular.git
+   ```
 
-2. Install dependencies:
-```bash
-npm install
-```
+2. Navigate to the project directory:
+   ```bash
+   cd myFlix-angular
+   ```
 
-## Development
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-To start the development server:
+4. Start the development server:
+   ```bash
+   ng serve
+   ```
 
-```bash
-ng serve
-```
+5. Open your browser and navigate to:
+   ```
+   http://localhost:4200/
+   ```
 
-The application will be available at `http://localhost:4200/`. Any changes you make to the source files will automatically reload the application.
-
-## Building for Production
-
-To create a production build:
-
-```bash
-ng build --configuration production
-```
-
-The build artifacts will be stored in the `dist/my-flix-angular-client/browser/` directory.
-
-## Deployment
-
-The application is configured for deployment to GitHub Pages. To deploy:
+## Documentation
+The project includes comprehensive documentation generated using TypeDoc. To generate the documentation:
 
 ```bash
-npm run deploy
+npm run docs
 ```
 
-This will build the application for production and deploy it to the GitHub Pages branch.
+The documentation will be generated in the `docs` directory.
+
+## Component Structure
+- **Welcome Page**: Entry point for user registration/login
+- **Movie Card**: Displays movie information and handles user interactions
+- **User Profile**: Manages user information and favorite movies
+- **Dialog Components**: 
+  - Genre information
+  - Director details
+  - Movie synopsis
+
+## API Integration
+The application integrates with a REST API to:
+- Manage user authentication
+- Fetch movie data
+- Handle user favorites
+- Update user information
+
+## Build and Deployment
+To build the project for production:
+
+```bash
+npm run build
+```
+
+The build artifacts will be stored in the `dist/` directory.
 
 ## Testing
-
 Run unit tests:
 ```bash
-ng test
+npm test
 ```
-
-Run end-to-end tests:
-```bash
-ng e2e
-```
-
-## Project Structure
-
-- `src/app/components/` - Contains all Angular components
-- `src/app/services/` - Contains services for API communication and data management
-- `src/app/models/` - Contains TypeScript interfaces and models
-- `src/assets/` - Contains static assets like images and styles
-
-## Technologies Used
-
-- Angular 19.2.0
-- TypeScript 5.7.2
-- Angular Material 19.2.8
-- RxJS 7.8.0
-- Angular Router 19.2.0
-- Express.js 4.18.2 (for SSR)
 
 ## Contributing
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## Development Guidelines
+- Follow Angular best practices
+- Use TypeScript features appropriately
+- Maintain comprehensive documentation
+- Write clear commit messages
+- Follow the established code style
+
+## Code Style
+- Use TypeScript's strict mode
+- Follow Angular style guide
+- Implement proper error handling
+- Include appropriate comments
+- Use meaningful variable names
+
+## Browser Support
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Known Issues
+Please check the GitHub issues page for current problems and feature requests.
 
 ## License
+This project is licensed under the MIT License.
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Angular team for the amazing framework
-- The Movie Database API for providing movie data
+## Contact
+For any questions or concerns, please open an issue on GitHub.

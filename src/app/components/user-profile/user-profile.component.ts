@@ -12,6 +12,12 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { FetchApiDataService } from '../../fetch-api-data.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
+/**
+ * Component for managing user profile information
+ * @class UserProfileComponent
+ * @description Handles user profile display, editing, and deletion.
+ * Also manages the user's favorite movies list.
+ */
 @Component({
   selector: 'app-user-profile',
   standalone: true,
@@ -31,10 +37,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent implements OnInit {
+  /** Form group for user profile editing */
   userForm: FormGroup;
+  /** Current user data */
   user: any = {};
+  /** List of user's favorite movies with details */
   favoriteMovies: any[] = [];
+  /** Loading state indicator */
   isLoading = false;
+  /** Edit mode toggle */
   isEditing = false;
 
   constructor(
@@ -44,6 +55,7 @@ export class UserProfileComponent implements OnInit {
     private snackBar: MatSnackBar,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
+    // Initialize form with validation
     this.userForm = this.formBuilder.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]],
@@ -54,6 +66,7 @@ export class UserProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Load user data if in browser environment
     if (isPlatformBrowser(this.platformId)) {
       this.getUser();
     }
@@ -62,12 +75,13 @@ export class UserProfileComponent implements OnInit {
   getUser(): void {
     this.isLoading = true;
     
-    // Check if user is stored in localStorage
+    // Verify authentication status
     if (isPlatformBrowser(this.platformId)) {
       const username = localStorage.getItem('user');
       const token = localStorage.getItem('token');
       
       if (!username || !token) {
+        // Redirect to welcome page if not authenticated
         this.router.navigate(['/welcome']);
         return;
       }
@@ -75,9 +89,10 @@ export class UserProfileComponent implements OnInit {
     
     this.fetchApiData.getUser().subscribe({
       next: (user) => {
-        // Normalize the user data
+        // Normalize date fields to handle API inconsistencies
         const birthDate = user.Birthday || user.birthday || user.BirthDate || user.birthDate;
         
+        // Normalize user data structure
         this.user = {
           username: user.Username || user.username,
           email: user.Email || user.email,
@@ -85,7 +100,7 @@ export class UserProfileComponent implements OnInit {
           favoriteMovies: user.FavoriteMovies || user.favoriteMovies || []
         };
         
-        // Update the form with normalized user data
+        // Update form with current user data
         this.userForm.patchValue({
           username: this.user.username,
           email: this.user.email,
@@ -95,12 +110,14 @@ export class UserProfileComponent implements OnInit {
         });
         
         this.isLoading = false;
+        // Load favorite movies after user data is set
         this.getFavoriteMovies();
       },
       error: (error) => {
         console.error('Error fetching user:', error);
         this.isLoading = false;
         
+        // Handle authentication errors
         if (error.status === 401 || error.status === 404) {
           this.router.navigate(['/welcome']);
         }
@@ -109,22 +126,15 @@ export class UserProfileComponent implements OnInit {
   }
 
   getFavoriteMovies(): void {
-    console.log('UserProfileComponent - getFavoriteMovies called');
-    console.log('User data:', this.user);
-    console.log('User favorite movies array:', this.user.favoriteMovies);
-    
+    // Fetch all movies and filter to user's favorites
     this.fetchApiData.getAllMovies().subscribe({
       next: (movies) => {
-        console.log('All movies from API:', movies);
-        console.log('First movie structure:', movies[0]);
-        
-        // Handle case sensitivity issues with movie properties
+        // Filter and normalize movie data
         this.favoriteMovies = movies.filter((movie: any) => {
           const movieId = movie.id;
-          const isFavorite = this.user.favoriteMovies?.includes(movieId);
-          console.log(`Movie ${movieId} (${movie.Title || movie.title}): ${isFavorite ? 'Favorite' : 'Not favorite'}`);
-          return isFavorite;
+          return this.user.favoriteMovies?.includes(movieId);
         }).map((movie: any) => ({
+          // Normalize movie data structure
           _id: movie.id,
           Title: movie.Title || movie.title,
           Description: movie.Description || movie.description,
@@ -140,11 +150,9 @@ export class UserProfileComponent implements OnInit {
           },
           Featured: movie.Featured || movie.featured || false
         }));
-        
-        console.log('Filtered favorite movies:', this.favoriteMovies);
       },
       error: (error) => {
-        console.error('UserProfileComponent - Error fetching favorite movies:', error);
+        console.error('Error fetching favorite movies:', error);
       }
     });
   }
@@ -152,6 +160,7 @@ export class UserProfileComponent implements OnInit {
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) {
+      // Reset form to current user data when canceling edit
       this.userForm.patchValue({
         username: this.user.username,
         email: this.user.email,
@@ -166,13 +175,13 @@ export class UserProfileComponent implements OnInit {
     if (this.userForm.valid) {
       this.isLoading = true;
       
-      // Create data object with all required fields
+      // Prepare update data object
       const userData: any = {
         username: this.userForm.get('username')?.value || this.user.username,
         email: this.userForm.get('email')?.value || this.user.email,
       };
 
-      // Add optional fields if they have values
+      // Add optional fields if provided
       const password = this.userForm.get('password')?.value;
       const birthDate = this.userForm.get('birthDate')?.value;
 
@@ -181,22 +190,21 @@ export class UserProfileComponent implements OnInit {
       }
 
       if (birthDate) {
-        // Set time to noon to avoid timezone issues
+        // Normalize date to avoid timezone issues
         const dateToUse = new Date(birthDate);
         dateToUse.setHours(12, 0, 0, 0);
         userData.birthDate = this.formatDateForAPI(dateToUse);
       }
 
-      console.log('Sending update data:', userData);
-
+      // Send update request
       this.fetchApiData.editUser(userData).subscribe({
         next: (response) => {
-          console.log('Update successful:', response);
           this.snackBar.open('Profile updated successfully!', 'OK', {
             duration: 2000
           });
           this.isLoading = false;
           this.isEditing = false;
+          // Reload user data to reflect changes
           this.getUser();
         },
         error: (error) => {
@@ -216,6 +224,7 @@ export class UserProfileComponent implements OnInit {
       this.fetchApiData.deleteUser().subscribe({
         next: () => {
           this.isLoading = false;
+          // Clear local storage and redirect after successful deletion
           localStorage.clear();
           this.router.navigate(['/welcome']);
           this.snackBar.open('Account deleted successfully', 'OK', {
@@ -239,17 +248,16 @@ export class UserProfileComponent implements OnInit {
         this.snackBar.open('Movie removed from favorites', 'OK', {
           duration: 2000
         });
-        // Update the user's favorite movies
+        // Update local state to reflect changes
         this.user.favoriteMovies = this.user.favoriteMovies.filter(
           (id: string) => id !== movieId
         );
-        // Update the displayed favorite movies
         this.favoriteMovies = this.favoriteMovies.filter(
           (movie) => movie._id !== movieId
         );
       },
       error: (error) => {
-        console.error('Error removing movie from favorites:', error);
+        console.error('Error removing favorite:', error);
         this.snackBar.open('Error removing movie from favorites', 'OK', {
           duration: 2000
         });
@@ -257,24 +265,28 @@ export class UserProfileComponent implements OnInit {
     });
   }
 
-  // Password match validator
+  /**
+   * Custom validator to ensure password and confirm password match
+   */
   private passwordMatchValidator(g: FormGroup) {
-    const password = g.get('password')?.value;
-    const confirmPassword = g.get('confirmPassword')?.value;
-    return password === confirmPassword ? null : { 'mismatch': true };
+    return g.get('password')?.value === g.get('confirmPassword')?.value
+      ? null
+      : { mismatch: true };
   }
 
-  // Helper method to parse date without timezone offset
+  /**
+   * Parse date string without timezone conversion
+   */
   private parseDateNoTimezone(dateStr: string): Date {
-    const [year, month, day] = dateStr.split('-').map(num => parseInt(num, 10));
-    return new Date(year, month - 1, day, 12, 0, 0);
+    const date = new Date(dateStr);
+    date.setHours(12, 0, 0, 0);
+    return date;
   }
 
-  // Helper method to format date for API
+  /**
+   * Format date for API submission
+   */
   private formatDateForAPI(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return date.toISOString().split('T')[0];
   }
 }
