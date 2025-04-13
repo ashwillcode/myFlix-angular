@@ -12,6 +12,12 @@ import { GenreDialogComponent } from '../genre-dialog/genre-dialog.component';
 import { DirectorDialogComponent } from '../director-dialog/director-dialog.component';
 import { SynopsisDialogComponent } from '../synopsis-dialog/synopsis-dialog.component';
 
+/**
+ * Component responsible for displaying movie cards in a grid layout
+ * @class MovieCardComponent
+ * @description Handles the display and interaction of movie cards, including
+ * favorite toggling, opening dialogs for additional information, and error handling
+ */
 @Component({
   selector: 'app-movie-card',
   standalone: true,
@@ -26,11 +32,23 @@ import { SynopsisDialogComponent } from '../synopsis-dialog/synopsis-dialog.comp
   styleUrls: ['./movie-card.component.scss']
 })
 export class MovieCardComponent implements OnInit {
+  /** Array of movies to display */
   movies: Movie[] = [];
+  /** Loading state indicator */
   isLoading = false;
+  /** Error message if any */
   error: string | null = null;
+  /** Array of favorite movie IDs */
   favoriteMovies: string[] = [];
 
+  /**
+   * Creates an instance of MovieCardComponent
+   * @param fetchApiData - Service for API calls
+   * @param router - Angular router service
+   * @param dialog - Material dialog service
+   * @param snackBar - Material snackbar service
+   * @param platformId - Platform identifier for browser/server detection
+   */
   constructor(
     private fetchApiData: FetchApiDataService,
     private router: Router,
@@ -39,6 +57,10 @@ export class MovieCardComponent implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
+  /**
+   * Lifecycle hook that is called after component initialization
+   * Checks for authentication and loads movies and favorites
+   */
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       const token = localStorage.getItem('token');
@@ -51,6 +73,10 @@ export class MovieCardComponent implements OnInit {
     }
   }
 
+  /**
+   * Fetches all movies from the API and processes them for display
+   * Handles error cases and data normalization
+   */
   getMovies(): void {
     this.isLoading = true;
     this.error = null;
@@ -133,6 +159,10 @@ export class MovieCardComponent implements OnInit {
     });
   }
 
+  /**
+   * Retrieves the user's favorite movies from the API
+   * Updates the favoriteMovies array with the response
+   */
   getFavoriteMovies(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.fetchApiData.getUser().subscribe({
@@ -149,6 +179,10 @@ export class MovieCardComponent implements OnInit {
     }
   }
 
+  /**
+   * Toggles a movie's favorite status
+   * @param movieId - ID of the movie to toggle
+   */
   toggleFavorite(movieId: string): void {
     console.log('MovieCardComponent - toggleFavorite called with movieId:', movieId);
     
@@ -223,6 +257,10 @@ export class MovieCardComponent implements OnInit {
     }
   }
 
+  /**
+   * Opens a dialog displaying genre information
+   * @param genre - Genre object containing details to display
+   */
   openGenreDialog(genre: any): void {
     this.dialog.open(GenreDialogComponent, {
       data: genre,
@@ -230,6 +268,10 @@ export class MovieCardComponent implements OnInit {
     });
   }
 
+  /**
+   * Opens a dialog displaying director information
+   * @param director - Director object containing details to display
+   */
   openDirectorDialog(director: any): void {
     this.dialog.open(DirectorDialogComponent, {
       data: director,
@@ -237,6 +279,10 @@ export class MovieCardComponent implements OnInit {
     });
   }
 
+  /**
+   * Opens a dialog displaying movie synopsis
+   * @param movie - Movie object containing synopsis to display
+   */
   openSynopsisDialog(movie: Movie): void {
     this.dialog.open(SynopsisDialogComponent, {
       data: movie,
@@ -244,6 +290,11 @@ export class MovieCardComponent implements OnInit {
     });
   }
 
+  /**
+   * Handles image loading errors by setting a fallback image
+   * @param event - The error event from the image
+   * @param movie - The movie object whose image failed to load
+   */
   onImageError(event: Event, movie: Movie): void {
     console.error('Image failed to load:', {
       movieId: movie._id,

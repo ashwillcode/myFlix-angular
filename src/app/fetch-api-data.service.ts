@@ -4,23 +4,45 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 
-// User interface
+/**
+ * Interface representing a user in the application
+ * @interface User
+ */
 interface User {
+  /** Unique identifier for the user */
   _id?: string;
+  /** Username for login and display */
   Username: string;
+  /** User's password (should be hashed) */
   Password: string;
+  /** User's email address */
   Email: string;
+  /** User's date of birth */
   BirthDate?: Date;
+  /** Array of movie IDs that the user has marked as favorites */
   FavoriteMovies?: string[];
 }
 
+/**
+ * Service responsible for handling all API calls to the movie database
+ * @class FetchApiDataService
+ * @description Provides methods for user authentication, movie data retrieval,
+ * and user profile management. Handles all HTTP requests to the backend API.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class FetchApiDataService {
+  /** Base URL for the API endpoints */
   private apiUrl = 'https://filmapi-ab3ce15dfb3f.herokuapp.com';
+  /** Storage for the authentication token */
   private token = '';
 
+  /**
+   * Creates an instance of FetchApiDataService
+   * @param http - Angular's HttpClient service for making HTTP requests
+   * @param platformId - Platform identifier for browser/server detection
+   */
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -28,7 +50,11 @@ export class FetchApiDataService {
     console.log('FetchApiDataService initialized with API URL:', this.apiUrl);
   }
 
-  // Get auth token
+  /**
+   * Retrieves the authentication token from localStorage
+   * @private
+   * @returns {string} The authentication token with 'Bearer' prefix
+   */
   private getToken(): string {
     if (!isPlatformBrowser(this.platformId)) {
       return '';
@@ -56,7 +82,11 @@ export class FetchApiDataService {
     return token;
   }
 
-  // Add auth header to requests
+  /**
+   * Creates HTTP headers with authentication token
+   * @private
+   * @returns {HttpHeaders} Headers object with Authorization and Content-Type
+   */
   private getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
     console.log('FetchApiDataService - Getting auth headers:', {
@@ -79,14 +109,22 @@ export class FetchApiDataService {
     });
   }
 
-  // User registration
+  /**
+   * Registers a new user in the system
+   * @param userDetails - User information for registration
+   * @returns Observable with the registration response
+   */
   public userRegistration(userDetails: User): Observable<any> {
     return this.http.post(this.apiUrl + '/users', userDetails).pipe(
       catchError(this.handleError)
     );
   }
 
-  // User login
+  /**
+   * Authenticates a user and retrieves a JWT token
+   * @param userDetails - Login credentials (username and password)
+   * @returns Observable with the login response containing the JWT token
+   */
   public userLogin(userDetails: { Username: string; Password: string }): Observable<any> {
     console.log('Attempting login for user:', userDetails.Username);
     return this.http.post(this.apiUrl + '/login', userDetails).pipe(
@@ -101,7 +139,11 @@ export class FetchApiDataService {
     );
   }
 
-  // Get user info
+  /**
+   * Retrieves the current user's profile information
+   * @returns Observable with the user's profile data
+   * @throws Error if no username is found in localStorage
+   */
   public getUser(): Observable<any> {
     if (!isPlatformBrowser(this.platformId)) {
       return throwError(() => new Error('Cannot access user info on server side'));
@@ -141,7 +183,11 @@ export class FetchApiDataService {
     );
   }
 
-  // Edit user info
+  /**
+   * Updates the current user's profile information
+   * @param userDetails - Updated user information
+   * @returns Observable with the update response
+   */
   public editUser(userDetails: User): Observable<any> {
     if (!isPlatformBrowser(this.platformId)) {
       return throwError(() => new Error('Cannot edit user on server side'));
@@ -155,7 +201,10 @@ export class FetchApiDataService {
     );
   }
 
-  // Delete user
+  /**
+   * Deletes the current user's account
+   * @returns Observable with the deletion response
+   */
   public deleteUser(): Observable<any> {
     if (!isPlatformBrowser(this.platformId)) {
       return throwError(() => new Error('Cannot delete user on server side'));
@@ -169,7 +218,10 @@ export class FetchApiDataService {
     );
   }
 
-  // Get all movies
+  /**
+   * Retrieves all movies from the database
+   * @returns Observable with an array of movie objects
+   */
   public getAllMovies(): Observable<any> {
     console.log('FetchApiDataService - getAllMovies called');
     const headers = this.getAuthHeaders();
@@ -197,7 +249,12 @@ export class FetchApiDataService {
     );
   }
 
-  // Add movie to favorites
+  /**
+   * Adds a movie to the user's favorites list
+   * @param movieId - ID of the movie to add to favorites
+   * @returns Observable with the update response
+   * @throws Error if the movie ID is invalid
+   */
   public addFavoriteMovie(movieId: string): Observable<any> {
     if (!isPlatformBrowser(this.platformId)) {
       return throwError(() => new Error('Cannot add favorite movie on server side'));
@@ -260,7 +317,11 @@ export class FetchApiDataService {
     );
   }
 
-  // Remove movie from favorites
+  /**
+   * Removes a movie from the user's favorites list
+   * @param movieId - ID of the movie to remove from favorites
+   * @returns Observable with the update response
+   */
   public removeFavoriteMovie(movieId: string): Observable<any> {
     if (!isPlatformBrowser(this.platformId)) {
       return throwError(() => new Error('Cannot remove favorite movie on server side'));
@@ -274,7 +335,12 @@ export class FetchApiDataService {
     );
   }
 
-  // Error handling
+  /**
+   * Handles HTTP errors and provides appropriate error messages
+   * @private
+   * @param error - The error object from the HTTP request
+   * @returns Observable that throws an error with a user-friendly message
+   */
   private handleError(error: any): Observable<any> {
     console.error('API Error:', {
       status: error.status,

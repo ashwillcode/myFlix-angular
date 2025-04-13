@@ -9,7 +9,8 @@
     "test": "ng test",
     "serve:ssr:myFlix-Angular-client": "node dist/my-flix-angular-client/server/server.mjs",
     "predeploy": "ng build --configuration production --base-href=/myFlix-angular/",
-    "deploy": "npx angular-cli-ghpages --dir=dist/my-flix-angular-client/browser --no-silent"
+    "deploy": "npx angular-cli-ghpages --dir=dist/my-flix-angular-client/browser --no-silent",
+    "docs": "typedoc"
   },
   "private": true,
   "dependencies": {

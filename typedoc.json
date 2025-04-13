@@ -1,0 +1,12 @@
+{
+  "entryPoints": ["src/**/*.ts"],
+  "out": "docs",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "theme": "default",
+  "name": "MyFlix Angular Documentation",
+  "readme": "README.md",
+  "includeVersion": true,
+  "entryPointStrategy": "expand"
+} 

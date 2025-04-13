@@ -1,15 +1,16 @@
 import { NgModule } from '@angular/core';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
+/**
+ * Root module of the application
+ * @class AppModule
+ */
 @NgModule({
-  declarations: [
-    // ... existing code ...
-  ],
+  declarations: [],
   imports: [
-    // ... existing code ...
-    MatSnackBarModule,
-    // ... existing code ...
+    MatSnackBarModule
   ],
-  // ... existing code ...
+  providers: [],
+  bootstrap: []
 })
-// ... existing code ... 
+export class AppModule { } 
