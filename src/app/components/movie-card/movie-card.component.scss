@@ -21,9 +21,29 @@
   }
 
   mat-card-actions {
-    padding: 16px;
     display: flex;
-    justify-content: flex-end;
+    padding: 16px;
+    justify-content: space-between;
+    align-items: center;
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      
+      button {
+        margin: 0;
+        min-width: 110px;
+        
+        mat-icon {
+          margin-right: 8px;
+        }
+      }
+    }
+
+    button[mat-icon-button] {
+      margin-left: 16px;
+    }
   }
 }
 
@@ -36,4 +56,10 @@
 
 .error {
   color: red;
+}
+
+.debug-info {
+  color: red;
+  padding: 10px;
+  background-color: #fff3f3;
 }

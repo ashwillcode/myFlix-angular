@@ -8,6 +8,9 @@ import { FetchApiDataService } from '../../fetch-api-data.service';
 import { Movie } from '../../models/movie';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { GenreDialogComponent } from '../genre-dialog/genre-dialog.component';
+import { DirectorDialogComponent } from '../director-dialog/director-dialog.component';
+import { SynopsisDialogComponent } from '../synopsis-dialog/synopsis-dialog.component';
 
 @Component({
   selector: 'app-movie-card',
@@ -221,15 +224,24 @@ export class MovieCardComponent implements OnInit {
   }
 
   openGenreDialog(genre: any): void {
-    // TODO: Implement genre dialog
+    this.dialog.open(GenreDialogComponent, {
+      data: genre,
+      width: '400px'
+    });
   }
 
   openDirectorDialog(director: any): void {
-    // TODO: Implement director dialog
+    this.dialog.open(DirectorDialogComponent, {
+      data: director,
+      width: '400px'
+    });
   }
 
   openSynopsisDialog(movie: Movie): void {
-    // TODO: Implement synopsis dialog
+    this.dialog.open(SynopsisDialogComponent, {
+      data: movie,
+      width: '400px'
+    });
   }
 
   onImageError(event: Event, movie: Movie): void {

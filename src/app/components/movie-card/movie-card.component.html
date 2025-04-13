@@ -23,18 +23,20 @@
       <p><strong>Director:</strong> {{ movie.Director.Name }}</p>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-button color="primary" (click)="openGenreDialog(movie.Genre)">
-        <mat-icon>category</mat-icon>
-        Genre
-      </button>
-      <button mat-button color="primary" (click)="openDirectorDialog(movie.Director)">
-        <mat-icon>person</mat-icon>
-        Director
-      </button>
-      <button mat-button color="primary" (click)="openSynopsisDialog(movie)">
-        <mat-icon>description</mat-icon>
-        Synopsis
-      </button>
+      <div class="action-buttons">
+        <button mat-button color="primary" (click)="openGenreDialog(movie.Genre)">
+          <mat-icon>category</mat-icon>
+          Genre
+        </button>
+        <button mat-button color="primary" (click)="openDirectorDialog(movie.Director)">
+          <mat-icon>person</mat-icon>
+          Director
+        </button>
+        <button mat-button color="primary" (click)="openSynopsisDialog(movie)">
+          <mat-icon>description</mat-icon>
+          Synopsis
+        </button>
+      </div>
       <button mat-icon-button color="warn" (click)="movie._id ? toggleFavorite(movie._id) : null">
         <mat-icon>{{ favoriteMovies.includes(movie._id) ? 'favorite' : 'favorite_border' }}</mat-icon>
       </button>
