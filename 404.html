@@ -2,17 +2,13 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Redirecting to myFlix</title>
+  <title>MyFlix Angular</title>
   <script>
-    // GitHub Pages SPA redirect
-    // Store the path segment after the repository name
-    const pathSegment = window.location.pathname.replace('/myFlix-angular', '');
-
-    // Redirect to the base URL with the repo name
-    window.location.replace('/myFlix-angular/');
+    sessionStorage.setItem('redirectPath', window.location.pathname);
+    window.location.href = '/myFlix-angular/';
   </script>
 </head>
 <body>
-  <p>Redirecting to myFlix...</p>
+  <p>Redirecting to MyFlix...</p>
 </body>
 </html> 
