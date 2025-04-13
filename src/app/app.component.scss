@@ -17,15 +17,22 @@ mat-toolbar {
   top: 0;
   width: 100%;
   z-index: 1000;
+  background-color: white !important;
+  color: black !important;
+  box-shadow: none !important;
+  border-bottom: 4px solid #f8bbd0 !important;
 
   button {
     display: flex;
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
+    background-color: white !important;
+    color: black !important;
+    margin-right: 16px;
 
     &:hover {
-      background-color: #f48fb1 !important;
+      background-color: #f8bbd0 !important;
       transform: scale(1.05);
     }
   }
@@ -35,6 +42,7 @@ mat-toolbar {
     height: 20px;
     width: 20px;
     margin-right: 4px;
+    color: black !important;
   }
 }
 

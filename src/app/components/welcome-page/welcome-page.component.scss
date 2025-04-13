@@ -24,10 +24,12 @@
       font-size: 1.1em;
       padding: 8px 24px;
       transition: all 0.3s ease;
+      background-color: #f8bbd0 !important;
+      color: black !important;
 
       &:hover {
         transform: scale(1.05);
-        background-color: #f48fb1 !important;
+        background-color: #f8bbd0 !important;
       }
     }
   }

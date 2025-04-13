@@ -1,6 +1,10 @@
 <div class="main-page">
   <mat-toolbar>
-    <span>myFlix</span>
+    <span>
+      <a routerLink="/movies" style="text-decoration: none; color: inherit;">
+        myFlix
+      </a>
+    </span>
     <span class="toolbar-spacer"></span>
     @if (isLoggedIn()) {
       <button mat-button routerLink="/profile">
